@@ -28,6 +28,7 @@
         "where": "Chrome on Windows, at 9:41",
         "choices": [{"value": "42"}, {"value": "17"}, {"value": "85"}],
         "message": "",
+        "title": "",
         "changepassword": "",
         "approved": false
     }
@@ -38,24 +39,27 @@
     <h2><%#str%>approve:title, factor_oksigeniaaty<%/str%></h2>
     <p><%who%></p>
     <p><strong><%where%></strong></p>
-    <p><%#str%>approve:pick, factor_oksigeniaaty<%/str%></p>
+    <p class="ion-margin-top"><strong><%#str%>approve:pick, factor_oksigeniaaty<%/str%></strong></p>
     <ion-grid>
         <ion-row>
 <%#choices%>
             <ion-col>
-                <ion-button expand="block" size="large" core-site-plugins-call-ws name="factor_oksigeniaaty_answer"
-                    [params]="{requestid: <%requestid%>, choice: '<%value%>'}" [preSets]="{getFromCache: 0, saveToCache: 0}"
-                    refreshOnSuccess="true"><%value%></ion-button>
+                <ion-button expand="block" size="large" core-site-plugins-call-ws
+                    name="factor_oksigeniaaty_answer" [params]="{requestid: <%requestid%>, choice: '<%value%>'}"
+                    [preSets]="{getFromCache: 0, saveToCache: 0}" refreshOnSuccess="true"><%value%></ion-button>
             </ion-col>
 <%/choices%>
         </ion-row>
     </ion-grid>
-    <ion-button expand="block" fill="outline" color="danger" core-site-plugins-call-ws name="factor_oksigeniaaty_answer"
-        [params]="{requestid: <%requestid%>, choice: 'deny'}" [preSets]="{getFromCache: 0, saveToCache: 0}"
-        refreshOnSuccess="true"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>
+    <p class="ion-text-center"><small><%#str%>approve:pickhint, factor_oksigeniaaty<%/str%></small></p>
+    <div class="ion-padding-top ion-margin-top">
+        <ion-button expand="block" fill="outline" color="danger" core-site-plugins-call-ws name="factor_oksigeniaaty_answer"
+            [params]="{requestid: <%requestid%>, choice: 'deny'}" [preSets]="{getFromCache: 0, saveToCache: 0}"
+            refreshOnSuccess="true"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>
+    </div>
 <%/pending%>
 <%^pending%>
-    <h2><%#approved%><%#str%>approve:donetitle, factor_oksigeniaaty<%/str%><%/approved%><%^approved%><%#str%>approve:title, factor_oksigeniaaty<%/str%><%/approved%></h2>
+    <h2><%title%></h2>
     <p><%message%></p>
 <%#changepassword%>
     <ion-button expand="block" core-link capture="false" inApp="true" href="<%changepassword%>"><%#str%>approve:changepassword, factor_oksigeniaaty<%/str%></ion-button>

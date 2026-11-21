@@ -38,7 +38,11 @@ class approval {
     public static function context(?\stdClass $request, \stdClass $user, bool $web): array {
         $site = format_string(get_site()->fullname);
         if (!$request) {
-            return ['pending' => false, 'message' => get_string('approve:none', 'factor_oksigeniaaty')];
+            return [
+                'pending' => false,
+                'title' => get_string('approve:title', 'factor_oksigeniaaty'),
+                'message' => get_string('approve:none', 'factor_oksigeniaaty'),
+            ];
         }
         if ($request->status === request::PENDING) {
             $choices = [];
@@ -72,8 +76,15 @@ class approval {
                     : (new \moodle_url('/login/change_password.php'))->out(false);
             }
         }
+        $titles = [
+            request::APPROVED => 'approve:donetitle',
+            request::DENIED => 'approve:denytitle',
+            request::WRONG => 'approve:wrongtitle',
+            request::EXPIRED => 'approve:expiredtitle',
+        ];
         return [
             'pending' => false,
+            'title' => get_string($titles[$status] ?? 'approve:title', 'factor_oksigeniaaty'),
             'message' => get_string('approve:' . $status, 'factor_oksigeniaaty'),
             'changepassword' => $changepassword,
             'approved' => $status === request::APPROVED,

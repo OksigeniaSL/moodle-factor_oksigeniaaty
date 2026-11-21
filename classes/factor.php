@@ -84,7 +84,9 @@ class factor extends object_factor_base {
 
         $problem = '';
         $again = optional_param('oksigeniaatyagain', 0, PARAM_BOOL) && confirm_sesskey();
-        if (!$request || $request->status === request::USED || ($request->status === request::EXPIRED && $again)) {
+        // Another one when there is none, or when the person asks for it: the one waiting expired, or never arrived.
+        $renew = $again && in_array($request->status ?? '', [request::EXPIRED, request::PENDING], true);
+        if (!$request || $request->status === request::USED || $renew) {
             if (request::can_create($userid)) {
                 $device = request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
                 $request = request::create($userid, $sid, $device, getremoteaddr());
@@ -115,6 +117,7 @@ class factor extends object_factor_base {
             'checkurl' => $waiting ? $checkurl->out(false) : '',
             'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
             'againurl' => $againurl->out(false),
+            'minutes' => (int) ceil(request::validity() / MINSECS),
             'problem' => $problem,
             'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
         ];

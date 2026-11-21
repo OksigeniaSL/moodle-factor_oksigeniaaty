@@ -26,6 +26,7 @@
         "checkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/check.php?r=1&sesskey=x",
         "expired": false,
         "againurl": "https://example.com/admin/tool/mfa/auth.php?factorname=oksigeniaaty&oksigeniaatyagain=1&sesskey=x",
+        "minutes": 3,
         "problem": "",
         "early": ""
     }
@@ -38,14 +39,18 @@
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
         {{#str}} wait, factor_oksigeniaaty {{/str}}
     </p>
+    {{#early}}
+    <p class="factor-oksigeniaaty-early" role="alert">{{early}}</p>
+    {{/early}}
+    <p class="factor-oksigeniaaty-valid">{{#str}} wait:valid, factor_oksigeniaaty, {{minutes}} {{/str}}</p>
+    <p class="factor-oksigeniaaty-resend" data-oksigeniaaty-resend hidden>
+        <a href="{{againurl}}">{{#str}} wait:resend, factor_oksigeniaaty {{/str}}</a>
+    </p>
     {{/waiting}}
     {{#expired}}
     <p role="status">{{#str}} wait:expired, factor_oksigeniaaty {{/str}}</p>
     <p><a class="btn btn-secondary" href="{{againurl}}">{{#str}} wait:again, factor_oksigeniaaty {{/str}}</a></p>
     {{/expired}}
-    {{#early}}
-    <div class="alert alert-info" role="alert">{{early}}</div>
-    {{/early}}
     {{#problem}}
     <div class="alert alert-warning" role="alert">{{problem}}</div>
     {{/problem}}

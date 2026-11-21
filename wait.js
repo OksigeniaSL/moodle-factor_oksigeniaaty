@@ -31,8 +31,23 @@
     var form = box.closest ? box.closest('form') : null;
     var done = false;
 
+    // The form's own button («I have approved it») is only a way out if the screen does not move on by itself:
+    // it does not look like the main thing to do, which is on the phone.
+    var button = form ? form.querySelector('[name="submitbutton"]') : null;
+    if (button && button.classList) {
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-outline-secondary');
+    }
+
+    // «Not getting it? Send another notice», once there has been time for it to arrive.
+    var resend = box.querySelector('[data-oksigeniaaty-resend]');
+    if (resend) {
+        window.setTimeout(function() {
+            resend.hidden = false;
+        }, 20000);
+    }
+
     var goOn = function() {
-        var button = form ? form.querySelector('[name="submitbutton"]') : null;
         if (button) {
             button.click();
         } else if (form) {
