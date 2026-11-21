@@ -142,8 +142,10 @@ class chats {
      */
     public static function answer_received($hook): void {
         global $DB;
-        if ($hook->get_component() !== 'factor_oksigeniaaty'
-                || !in_array($hook->get_notice(), [self::NOTICE, self::NOTICE_TYPED], true)) {
+        if (
+            $hook->get_component() !== 'factor_oksigeniaaty'
+            || !in_array($hook->get_notice(), [self::NOTICE, self::NOTICE_TYPED], true)
+        ) {
             return;
         }
         if (!preg_match('/^login:(\d+)$/', (string) $hook->get_ref(), $parts)) {
