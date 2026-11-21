@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4-dev (21 November 2026)
+
+- The text columns of the table have no empty default, which Moodle does not take.
+
 ## 0.1.3-dev (21 November 2026)
 
 - The notice asks «Is it you?» in its own text, in the person's language; the number is centred on the sign-in

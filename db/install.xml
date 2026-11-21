@@ -12,9 +12,9 @@
         <FIELD NAME="code" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="The number shown on the sign-in screen"/>
         <FIELD NAME="choices" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="The numbers offered on the phone, the right one among them, separated by commas"/>
         <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, approved, denied, wrong, expired or used"/>
-        <FIELD NAME="device" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="Browser and system of the sign-in, as the phone shows them"/>
-        <FIELD NAME="ip" TYPE="char" LENGTH="45" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="Address the sign-in came from"/>
-        <FIELD NAME="via" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="Where it was answered: app, web, telegram or whatsapp"/>
+        <FIELD NAME="device" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Browser and system of the sign-in, as the phone shows them"/>
+        <FIELD NAME="ip" TYPE="char" LENGTH="45" NOTNULL="true" SEQUENCE="false" COMMENT="Address the sign-in came from"/>
+        <FIELD NAME="via" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Where it was answered: app, web, telegram or whatsapp"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timeexpires" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timeanswered" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
