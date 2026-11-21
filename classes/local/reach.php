@@ -66,6 +66,23 @@ class reach {
         if (!$user || $user->deleted || $user->suspended) {
             return false;
         }
+        // In the person's language, wherever the request is made from.
+        $language = force_current_language((string) $user->lang);
+        try {
+            return self::deliver($request, $user);
+        } finally {
+            force_current_language($language);
+        }
+    }
+
+    /**
+     * Send a request, in the language already set.
+     *
+     * @param \stdClass $request The request.
+     * @param \stdClass $user The person.
+     * @return bool Whether it went anywhere.
+     */
+    private static function deliver(\stdClass $request, \stdClass $user): bool {
         $where = get_string('where', 'factor_oksigeniaaty', (object) [
             'device' => $request->device,
             'time' => userdate((int) $request->timecreated, get_string('strftimetime', 'langconfig'),
