@@ -26,7 +26,8 @@
         "checkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/check.php?r=1&sesskey=x",
         "expired": false,
         "againurl": "https://example.com/admin/tool/mfa/auth.php?factorname=oksigeniaaty&oksigeniaatyagain=1&sesskey=x",
-        "problem": ""
+        "problem": "",
+        "early": ""
     }
 }}
 <div class="factor-oksigeniaaty-login"{{#waiting}} data-oksigeniaaty-check="{{checkurl}}"{{/waiting}}>
@@ -41,6 +42,9 @@
     <p role="status">{{#str}} wait:expired, factor_oksigeniaaty {{/str}}</p>
     <p><a class="btn btn-secondary" href="{{againurl}}">{{#str}} wait:again, factor_oksigeniaaty {{/str}}</a></p>
     {{/expired}}
+    {{#early}}
+    <div class="alert alert-info" role="alert">{{early}}</div>
+    {{/early}}
     {{#problem}}
     <div class="alert alert-warning" role="alert">{{problem}}</div>
     {{/problem}}

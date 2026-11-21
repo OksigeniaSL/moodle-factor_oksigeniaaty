@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1-dev (21 November 2026)
+## 0.1.2-dev (21 November 2026)
 
 - The notice asks «Is it you?» in its own text, in the person's language; the number is centred on the sign-in
   screen.

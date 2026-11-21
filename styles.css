@@ -1,9 +1,8 @@
 /* The number to tap on the phone, large enough to read from a step away, in the theme's colours. */
-/* The form puts the element in a flex row that shrinks it to its content: it takes the whole row to centre. */
 .factor-oksigeniaaty-login {
     width: 100%;
-    flex: 1 1 100%;
     text-align: center;
+    margin-bottom: 1rem;
 }
 
 .factor-oksigeniaaty-code {

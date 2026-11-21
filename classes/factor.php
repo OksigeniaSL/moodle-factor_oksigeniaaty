@@ -99,6 +99,8 @@ class factor extends object_factor_base {
         }
 
         $waiting = $request && in_array($request->status, [request::PENDING, request::APPROVED], true) && $problem === '';
+        // Sent before the phone answered: the form does not go on, and says why here, where the number is.
+        $early = $waiting && $request->status === request::PENDING && $mform->isSubmitted();
         $context = [
             'code' => $waiting ? (int) $request->code : null,
             'waiting' => $waiting,
@@ -108,9 +110,10 @@ class factor extends object_factor_base {
             'againurl' => (new \moodle_url('/admin/tool/mfa/auth.php',
                 ['factorname' => 'oksigeniaaty', 'oksigeniaatyagain' => 1, 'sesskey' => sesskey()]))->out(false),
             'problem' => $problem,
+            'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
         ];
-        $mform->addElement('static', 'oksigeniaatywait', '',
-            $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
+        // Raw, not a static element: the form would put it in a narrow column of a row.
+        $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
         if ($waiting) {
             $PAGE->requires->js(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js',
                 ['v' => get_config('factor_oksigeniaaty', 'version')]));
