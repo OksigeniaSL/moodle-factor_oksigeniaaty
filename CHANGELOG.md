@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dev (22 November 2026)
+
+- The phone's page of a stopped sign-in no longer says «Sign-in stopped» twice.
+
 ## 0.2.0-dev (22 November 2026)
 
 - **Security: a phone approves only once registered, with a key of its own.** Until 0.1.5, whoever had a person's

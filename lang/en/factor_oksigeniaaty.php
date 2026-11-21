@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['approve:approved'] = 'Done: you can go on on the other screen.';
 $string['approve:changepassword'] = 'Change my password';
-$string['approve:denied'] = 'Sign-in stopped: nobody got in. Change your password so that they do not try again.';
+$string['approve:denied'] = 'Nobody got in. Change your password so that they do not try again.';
 $string['approve:deny'] = 'Not me: stop the sign-in';
 $string['approve:denytitle'] = 'Sign-in stopped';
 $string['approve:donetitle'] = 'Approved';
