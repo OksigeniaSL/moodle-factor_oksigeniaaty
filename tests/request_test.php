@@ -277,7 +277,8 @@ final class request_test extends \advanced_testcase {
         $this->assertSame('approval', $messages[0]->eventtype);
         $this->assertStringContainsString('approve.php?r=' . $request->id, $messages[0]->contexturl);
         $this->assertStringContainsString('Chrome on Windows', $messages[0]->smallmessage);
-        $this->assertStringNotContainsString((string) $request->code, $messages[0]->smallmessage);
+        // The number is not in the notice; the minutes of its time may be the same digits (9:53 and 53).
+        $this->assertDoesNotMatchRegularExpression('/(?<![:\d])' . (int) $request->code . '(?!\d)/', $messages[0]->smallmessage);
     }
 
     /**
