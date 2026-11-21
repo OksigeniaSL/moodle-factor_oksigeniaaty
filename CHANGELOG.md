@@ -1,9 +1,11 @@
 # Changelog
 
-## 0.2.5-dev (22 November 2026)
+## 0.2.6-dev (22 November 2026)
 
-- On the phone (the app, the web and the chats), under the numbers: «Tap a number only if it is you signing in now.
-  Nobody at the centre will ask you to tap one.», against the call that says «you will get a notice, tap the 47».
+The 0.2.5-dev, only in dev and beta, had a first wording of the warning that repeated «if it is you».
+
+- On the phone (the app, the web and the chats): «Nobody at the centre will ask you to tap a number. If someone does,
+  tap «Not me».», against the call that says «you will get a notice, tap the 47».
 - The time left: on the phone, as the page opens («2 minutes left to answer»); on the sign-in screen, counted down every
   second, and said to a screen reader at two minutes, one and thirty seconds, not every second.
 
