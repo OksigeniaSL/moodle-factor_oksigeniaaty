@@ -249,7 +249,7 @@ class factor extends object_factor_base {
      */
     public function setup_factor_form_definition_after_data(\MoodleQuickForm $mform): \MoodleQuickForm {
         global $OUTPUT, $PAGE, $USER;
-        $enrolid = (int) $mform->getElementValue('enrolid');
+        $enrolid = (int) $mform->getElement('enrolid')->getValue();
         $context = ['enrolid' => $enrolid, 'chats' => chats::join_links((int) $USER->id)];
         $code = self::$enrolcodes[$enrolid] ?? '';
         if ($code !== '') {
