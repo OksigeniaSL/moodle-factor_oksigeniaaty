@@ -43,8 +43,9 @@ class factor extends object_factor_base {
     /** @var bool[] Whether each person can get a request, for this request of the browser. */
     private static $reachable = [];
 
-    /** @var string The code of the registration this setup page shows, only while it is built. */
-    private $enrolcode = '';
+    /** @var string[] The code of each registration made by this request, to show in its page: tool_mfa builds the
+     * setup form with a new instance of the factor for each step, so it cannot live in the instance. */
+    private static $enrolcodes = [];
 
     /**
      * Whether the person can get a request somewhere, once per page.
@@ -231,7 +232,8 @@ class factor extends object_factor_base {
         global $USER;
         $enrolid = optional_param('enrolid', 0, PARAM_INT);
         if (!$enrolid || !devices::enrolment($enrolid, (int) $USER->id)) {
-            [$enrolid, $this->enrolcode] = devices::new_enrolment((int) $USER->id);
+            [$enrolid, $code] = devices::new_enrolment((int) $USER->id);
+            self::$enrolcodes[$enrolid] = $code;
         }
         $mform->addElement('hidden', 'enrolid', $enrolid);
         $mform->setType('enrolid', PARAM_INT);
@@ -249,8 +251,9 @@ class factor extends object_factor_base {
         global $OUTPUT, $PAGE, $USER;
         $enrolid = (int) $mform->getElementValue('enrolid');
         $context = ['enrolid' => $enrolid, 'chats' => chats::join_links((int) $USER->id)];
-        if ($this->enrolcode !== '') {
-            $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/enrol.php', ['c' => $this->enrolcode]);
+        $code = self::$enrolcodes[$enrolid] ?? '';
+        if ($code !== '') {
+            $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/enrol.php', ['c' => $code]);
             $qrcode = new \core_qrcode($url->out(false));
             $context += [
                 'qr' => 'data:image/png;base64,' . base64_encode($qrcode->getBarcodePngData(6, 6)),
