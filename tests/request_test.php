@@ -33,6 +33,7 @@ use factor_oksigeniaaty\local\request;
  * @covers     \factor_oksigeniaaty\local\devices
  * @covers     \factor_oksigeniaaty\external\answer
  * @covers     \factor_oksigeniaaty\external\enrol
+ * @covers     \factor_oksigeniaaty\api
  */
 final class request_test extends \advanced_testcase {
     /**
@@ -350,6 +351,23 @@ final class request_test extends \advanced_testcase {
             $DB->set_field(request::TABLE, 'timecreated', time() - request::RECENT - 60, ['id' => $more->id]);
         }
         $this->assertSame('stopped', request::held_back($userid));
+    }
+
+    /**
+     * An account given to another person: the former owner's phones no longer approve, and nothing stays waiting.
+     */
+    public function test_account_reassigned(): void {
+        $user = $this->getDataGenerator()->create_user();
+        $userid = (int) $user->id;
+        [, $code] = devices::new_enrolment($userid);
+        devices::complete($code, $userid, 'Pixel 8');
+        devices::new_enrolment($userid);
+        request::create($userid, 'a', 'Chrome on Windows', '10.0.0.1');
+
+        \factor_oksigeniaaty\api::account_reassigned($userid);
+
+        $this->assertSame([], devices::active($userid));
+        $this->assertNull(request::latest($userid));
     }
 
     /**

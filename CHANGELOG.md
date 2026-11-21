@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2-dev (22 November 2026)
+
+- `api::account_reassigned()`: an account given to another person loses the phones its former owner registered,
+  and nothing of theirs stays waiting.
+
 ## 0.2.1-dev (22 November 2026)
 
 - The phone's page of a stopped sign-in no longer says «Sign-in stopped» twice.
