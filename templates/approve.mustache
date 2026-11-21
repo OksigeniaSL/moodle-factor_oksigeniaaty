@@ -27,6 +27,7 @@
         "where": "Chrome on Windows, at 9:41",
         "left": "2 minutes left to answer.",
         "nobody": "Nobody at the centre will ask you to tap a number. If someone does, tap «Not me».",
+        "typed": false,
         "choices": [{"value": "42"}, {"value": "17"}, {"value": "85"}],
         "formurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/approve.php",
         "sesskey": "x",
@@ -39,8 +40,25 @@
     {{#pending}}
     <p>{{who}}</p>
     <p><strong>{{where}}</strong></p>
+    {{#typed}}
+    <p>{{#str}} approve:type, factor_oksigeniaaty {{/str}} {{left}}</p>
+    {{/typed}}
+    {{^typed}}
     <p>{{#str}} approve:pick, factor_oksigeniaaty {{/str}} {{left}}</p>
+    {{/typed}}
     <p class="factor-oksigeniaaty-nobody"><strong>{{nobody}}</strong></p>
+    {{#typed}}
+    <form method="post" action="{{formurl}}" class="factor-oksigeniaaty-typed mb-3">
+        <input type="hidden" name="r" value="{{requestid}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <label for="factor-oksigeniaaty-typed-{{requestid}}">{{#str}} approve:typelabel, factor_oksigeniaaty {{/str}}</label>
+        <input type="text" class="form-control mb-2" id="factor-oksigeniaaty-typed-{{requestid}}" name="choice"
+            inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" required>
+        <button type="submit" class="btn btn-primary w-100">{{#str}} approve:typebutton, factor_oksigeniaaty {{/str}}</button>
+        <p class="small mt-1">{{#str}} approve:typehint, factor_oksigeniaaty {{/str}}</p>
+    </form>
+    {{/typed}}
+    {{^typed}}
     <div class="factor-oksigeniaaty-choices">
         {{#choices}}
         <form method="post" action="{{formurl}}">
@@ -51,6 +69,7 @@
         </form>
         {{/choices}}
     </div>
+    {{/typed}}
     <form method="post" action="{{formurl}}">
         <input type="hidden" name="r" value="{{requestid}}">
         <input type="hidden" name="choice" value="deny">

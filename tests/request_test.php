@@ -95,6 +95,35 @@ final class request_test extends \advanced_testcase {
     }
 
     /**
+     * The site's administrators type the number: their phone page asks for it and says so, the rest choose among three.
+     * A typed number that is not the one on the screen stops the sign-in as a wrong choice does.
+     */
+    public function test_typed_for_administrators(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $admin = get_admin();
+        $this->assertFalse(request::typed((int) $user->id));
+        $this->assertTrue(request::typed((int) $admin->id));
+        $this->assertSame(chats::NOTICE, chats::notice((int) $user->id));
+        $this->assertSame(chats::NOTICE_TYPED, chats::notice((int) $admin->id));
+
+        $request = request::create((int) $admin->id, 'a', 'Chrome on Windows', '10.0.0.1');
+        $context = \factor_oksigeniaaty\output\approval::context($request, $admin, true);
+        $this->assertTrue($context['typed']);
+        $this->assertSame(get_string('approve:nobodytyped', 'factor_oksigeniaaty'), $context['nobody']);
+        $this->assertFalse(\factor_oksigeniaaty\output\approval::context(
+            request::create((int) $user->id, 'b', 'Chrome on Windows', '10.0.0.1'),
+            $user,
+            true
+        )['typed']);
+
+        $wrong = (string) (((int) $request->code + 1) % 100);
+        $this->assertSame(request::WRONG, request::answer((int) $request->id, (int) $admin->id, $wrong, 'app'));
+        $request = request::create((int) $admin->id, 'c', 'Chrome on Windows', '10.0.0.1');
+        $this->assertSame(request::APPROVED, request::answer((int) $request->id, (int) $admin->id, (string) $request->code, 'web'));
+    }
+
+    /**
      * Nobody else can answer a person's request, nor see it.
      */
     public function test_answer_only_by_the_person(): void {

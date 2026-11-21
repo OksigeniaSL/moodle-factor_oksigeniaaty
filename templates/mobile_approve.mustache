@@ -28,6 +28,7 @@
         "where": "Chrome on Windows, at 9:41",
         "left": "2 minutes left to answer.",
         "nobody": "Nobody at the centre will ask you to tap a number. If someone does, tap «Not me».",
+        "typed": false,
         "choices": [{"value": "42"}, {"value": "17"}, {"value": "85"}],
         "message": "",
         "title": "",
@@ -41,6 +42,18 @@
     <p><%who%></p>
     <p><strong><%where%></strong></p>
     <ng-container *ngIf="oksigeniaatyEnrolled">
+<%#typed%>
+    <p class="ion-margin-top"><strong><%#str%>approve:type, factor_oksigeniaaty<%/str%></strong> <%left%></p>
+    <p><strong><%nobody%></strong></p>
+    <ion-item>
+        <ion-input type="text" inputmode="numeric" maxlength="3" autocomplete="off" [(ngModel)]="CONTENT_OTHERDATA.code"
+            label="<%#str%>approve:typelabel, factor_oksigeniaaty<%/str%>" labelPlacement="stacked"></ion-input>
+    </ion-item>
+    <ion-button expand="block" size="large" [disabled]="oksigeniaatyBusy || !CONTENT_OTHERDATA.code"
+        (click)="oksigeniaatyAnswer(<%requestid%>, CONTENT_OTHERDATA.code)"><%#str%>approve:typebutton, factor_oksigeniaaty<%/str%></ion-button>
+    <p class="ion-text-center"><small><%#str%>approve:typehint, factor_oksigeniaaty<%/str%></small></p>
+<%/typed%>
+<%^typed%>
     <p class="ion-margin-top"><strong><%#str%>approve:pick, factor_oksigeniaaty<%/str%></strong> <%left%></p>
     <p><strong><%nobody%></strong></p>
     <ion-grid>
@@ -54,6 +67,7 @@
         </ion-row>
     </ion-grid>
     <p class="ion-text-center"><small><%#str%>approve:pickhint, factor_oksigeniaaty<%/str%></small></p>
+<%/typed%>
     <div class="ion-padding-top ion-margin-top">
         <ion-button expand="block" fill="outline" color="danger" [disabled]="oksigeniaatyBusy"
             (click)="oksigeniaatyAnswer(<%requestid%>, 'deny')"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>

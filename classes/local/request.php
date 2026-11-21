@@ -231,6 +231,18 @@ class request {
     }
 
     /**
+     * Whether this person types the number on the phone instead of choosing it among three: the site's administrators,
+     * whose accounts can do the most. Three to choose from is guessed one time in three; typing it is the number matching
+     * NIST SP 800-63B asks for.
+     *
+     * @param int $userid The person.
+     * @return bool
+     */
+    public static function typed(int $userid): bool {
+        return is_siteadmin($userid);
+    }
+
+    /**
      * The numbers the phone offers, in their order.
      *
      * @param \stdClass $request The request.

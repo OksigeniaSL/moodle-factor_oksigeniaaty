@@ -49,6 +49,7 @@ class approval {
             foreach (request::choices($request) as $number) {
                 $choices[] = ['value' => (string) $number];
             }
+            $typed = request::typed((int) $user->id);
             return [
                 'pending' => true,
                 'requestid' => (int) $request->id,
@@ -63,7 +64,8 @@ class approval {
                 ]),
                 'choices' => $choices,
                 'left' => self::left($request),
-                'nobody' => get_string('approve:nobody', 'factor_oksigeniaaty'),
+                'typed' => $typed,
+                'nobody' => get_string($typed ? 'approve:nobodytyped' : 'approve:nobody', 'factor_oksigeniaaty'),
                 'formurl' => $web ? (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php'))->out(false) : '',
                 'sesskey' => $web ? sesskey() : '',
             ];

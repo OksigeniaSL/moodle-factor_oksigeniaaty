@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.7-dev (22 November 2026)
+
+- The site's administrators type the number on the phone instead of choosing it among three, which is guessed one
+  time in three (`request::typed()`; number matching, as NIST SP 800-63B asks): the sign-in screen says «On your phone,
+  type this number», and the phone, in the app and on the web, asks for it with its own warning. A chat cannot take a
+  typed number: to them it only says to open the app, and keeps «It was not me» (a new notice, `login_check_typed`,
+  switched on in each channel where `login_check` is).
+
 ## 0.2.6-dev (22 November 2026)
 
 The 0.2.5-dev, only in dev and beta, had a first wording of the warning that repeated «if it is you».

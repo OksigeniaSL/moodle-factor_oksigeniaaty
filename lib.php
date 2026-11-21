@@ -43,5 +43,16 @@ function factor_oksigeniaaty_oksigeniamarandu_notices(): array {
             // ones joined from the account settings, which a token of the app reaches with the password alone.
             'ownjoin' => true,
         ],
+        // For the site's administrators, who type the number in the app: the chat only warns them and lets them stop it.
+        'login_check_typed' => [
+            'examples' => ['Colegio Ejemplo', 'Chrome en Windows, a las 9:41'],
+            'options' => ['deny'],
+            'freeonly' => true,
+            'uncapped' => true,
+            'channels' => ['telegram', 'whatsapp'],
+            'perweek' => 1,
+            'ownjoin' => true,
+            'follows' => 'login_check',
+        ],
     ];
 }

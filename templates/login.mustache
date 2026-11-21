@@ -27,6 +27,7 @@
         "expired": false,
         "againurl": "https://example.com/admin/tool/mfa/auth.php?factorname=oksigeniaaty&oksigeniaatyagain=1&sesskey=x",
         "minutes": 3,
+        "typed": false,
         "seconds": 178,
         "lefttext": "%s left to approve it on your phone.",
         "says": "{}",
@@ -38,7 +39,7 @@
 <div class="factor-oksigeniaaty-login"{{#waiting}} data-oksigeniaaty-check="{{checkurl}}"{{/waiting}}{{^waiting}} data-oksigeniaaty-nosubmit{{/waiting}}>
     {{#waiting}}
     <p>{{sent}}</p>
-    <p class="factor-oksigeniaaty-pick">{{#str}} wait:pick, factor_oksigeniaaty {{/str}}</p>
+    <p class="factor-oksigeniaaty-pick">{{#typed}}{{#str}} wait:type, factor_oksigeniaaty {{/str}}{{/typed}}{{^typed}}{{#str}} wait:pick, factor_oksigeniaaty {{/str}}{{/typed}}</p>
     <p class="factor-oksigeniaaty-code"><span class="visually-hidden sr-only">{{#str}} wait:codehidden, factor_oksigeniaaty {{/str}} </span>{{code}}</p>
     <p class="factor-oksigeniaaty-status">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>

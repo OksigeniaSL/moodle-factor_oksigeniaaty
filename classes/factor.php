@@ -135,6 +135,7 @@ class factor extends object_factor_base {
             'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
             'againurl' => $againurl->out(false),
             'minutes' => (int) ceil(request::validity() / MINSECS),
+            'typed' => $waiting && request::typed($userid),
             // What is left, counted down on the screen and said to a screen reader at two minutes, one and thirty
             // seconds: relative to now, so that the computer's clock does not matter.
             'seconds' => $waiting ? max(0, (int) $request->timecreated + request::validity() - time()) : 0,

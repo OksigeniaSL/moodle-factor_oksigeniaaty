@@ -32,6 +32,9 @@ class chats {
     /** @var string The question, as lib.php declares it. */
     public const NOTICE = 'login_check';
 
+    /** @var string The same for whoever types the number (request::typed()): only a warning and «It was not me». */
+    public const NOTICE_TYPED = 'login_check_typed';
+
     /** @var string[] The keys of the numbers' buttons, in the order of the choices. */
     public const KEYS = ['a', 'b', 'c'];
 
@@ -48,6 +51,16 @@ class chats {
     }
 
     /**
+     * The question this person gets on the chats: with the numbers, or, for whoever types it, only the warning.
+     *
+     * @param int $userid The person.
+     * @return string
+     */
+    public static function notice(int $userid): string {
+        return request::typed($userid) ? self::NOTICE_TYPED : self::NOTICE;
+    }
+
+    /**
      * Whether Marandu can ask this person on a chat they joined from the factor's page.
      *
      * @param int $userid The person.
@@ -59,7 +72,7 @@ class chats {
             return false;
         }
         try {
-            return (bool) $api::reaches('factor_oksigeniaaty', self::NOTICE, $userid);
+            return (bool) $api::reaches('factor_oksigeniaaty', self::notice($userid), $userid);
         } catch (\Throwable $e) {
             debugging('Approve from the phone, Marandu: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
@@ -78,15 +91,16 @@ class chats {
         if (!self::supported()) {
             return 0;
         }
-        $params = array_merge(
-            [format_string(get_site()->fullname, true, ['escape' => false]), $where],
-            array_map('strval', request::choices($request))
-        );
+        $typed = request::typed((int) $request->userid);
+        $params = [format_string(get_site()->fullname, true, ['escape' => false]), $where];
+        if (!$typed) {
+            $params = array_merge($params, array_map('strval', request::choices($request)));
+        }
         $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php', ['r' => $request->id]);
         try {
             return (int) $api::ask(
                 'factor_oksigeniaaty',
-                self::NOTICE,
+                self::notice((int) $request->userid),
                 $params,
                 self::ref($request),
                 0,
@@ -128,7 +142,8 @@ class chats {
      */
     public static function answer_received($hook): void {
         global $DB;
-        if ($hook->get_component() !== 'factor_oksigeniaaty' || $hook->get_notice() !== self::NOTICE) {
+        if ($hook->get_component() !== 'factor_oksigeniaaty'
+                || !in_array($hook->get_notice(), [self::NOTICE, self::NOTICE_TYPED], true)) {
             return;
         }
         if (!preg_match('/^login:(\d+)$/', (string) $hook->get_ref(), $parts)) {
