@@ -29,10 +29,21 @@ class reach {
      * Whether the person can get a request somewhere: without it, the factor does not offer itself.
      *
      * @param int $userid The person.
+     * @param bool $toapp Whether the app counts: not when the sign-in is in the app's own window (in_app_window()).
      * @return bool
      */
-    public static function any(int $userid): bool {
-        return self::app($userid) || chats::available($userid);
+    public static function any(int $userid, bool $toapp = true): bool {
+        return ($toapp && self::app($userid)) || chats::available($userid);
+    }
+
+    /**
+     * Whether this sign-in happens in the window of the Moodle app (or of an app made from it). There, the app's own
+     * notice would open the numbers under the window, out of sight: only the chats, which are other apps, can ask.
+     *
+     * @return bool
+     */
+    public static function in_app_window(): bool {
+        return \core_useragent::is_moodle_app();
     }
 
     /**
@@ -58,9 +69,10 @@ class reach {
      * Send a request to the phone and the chats.
      *
      * @param \stdClass $request The request.
+     * @param bool $toapp Whether to send it to the app too, as a push notice.
      * @return bool Whether it went anywhere.
      */
-    public static function send(\stdClass $request): bool {
+    public static function send(\stdClass $request, bool $toapp = true): bool {
         $user = \core_user::get_user((int) $request->userid);
         if (!$user || $user->deleted || $user->suspended) {
             return false;
@@ -68,7 +80,7 @@ class reach {
         // In the person's language, wherever the request is made from.
         $language = force_current_language((string) $user->lang);
         try {
-            return self::deliver($request, $user);
+            return self::deliver($request, $user, $toapp);
         } finally {
             force_current_language($language);
         }
@@ -79,9 +91,10 @@ class reach {
      *
      * @param \stdClass $request The request.
      * @param \stdClass $user The person.
+     * @param bool $toapp Whether to send it to the app too.
      * @return bool Whether it went anywhere.
      */
-    private static function deliver(\stdClass $request, \stdClass $user): bool {
+    private static function deliver(\stdClass $request, \stdClass $user, bool $toapp): bool {
         $where = get_string('where', 'factor_oksigeniaaty', (object) [
             'device' => $request->device,
             'time' => userdate(
@@ -91,7 +104,7 @@ class reach {
             ),
         ]);
         $sent = false;
-        if (self::app((int) $request->userid)) {
+        if ($toapp && self::app((int) $request->userid)) {
             $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php', ['r' => $request->id]);
             $site = format_string(get_site()->fullname);
             $message = new \core\message\message();

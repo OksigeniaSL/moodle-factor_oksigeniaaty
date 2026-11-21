@@ -18,6 +18,9 @@ phone.
   installed: the same question, with a button for each number. On WhatsApp, only inside the 24 hours of a conversation.
 - **On the web**, from the link of the notice, in another browser where the person is already signed in.
 
+When the sign-in happens in the window of the Moodle app itself, the app's notice would open the numbers under that
+window, out of sight: there the factor asks only on Telegram or WhatsApp, which are other apps.
+
 Nothing to set up. The factor offers itself to whoever can get the notice, and stays neutral for everyone else.
 
 ## Safety

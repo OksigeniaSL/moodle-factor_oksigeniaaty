@@ -48,7 +48,7 @@ class factor extends object_factor_base {
      */
     private static function ready(int $userid): bool {
         if (!array_key_exists($userid, self::$reachable)) {
-            self::$reachable[$userid] = $userid > 0 && reach::any($userid);
+            self::$reachable[$userid] = $userid > 0 && reach::any($userid, !reach::in_app_window());
         }
         return self::$reachable[$userid];
     }
@@ -88,7 +88,7 @@ class factor extends object_factor_base {
             if (request::can_create($userid)) {
                 $device = request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
                 $request = request::create($userid, $sid, $device, getremoteaddr());
-                if (!reach::send($request)) {
+                if (!reach::send($request, !reach::in_app_window())) {
                     $problem = get_string('wait:unsent', 'factor_oksigeniaaty');
                 }
             } else {

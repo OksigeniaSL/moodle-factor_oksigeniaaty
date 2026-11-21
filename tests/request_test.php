@@ -178,8 +178,24 @@ final class request_test extends \advanced_testcase {
         $this->assertTrue(reach::app($userid));
         $this->assertTrue(reach::any($userid));
 
+        // In the app's own window, the app does not count: its notice would open under the window.
+        $this->assertFalse(reach::any($userid, false));
+
         set_user_preference('message_provider_factor_oksigeniaaty_approval_enabled', 'popup', $userid);
         $this->assertFalse(reach::app($userid));
+    }
+
+    /**
+     * The sign-in in the window of the app is told apart by the app's browser signature.
+     */
+    public function test_in_app_window(): void {
+        \core_useragent::instance(true, 'Mozilla/5.0 (Linux; Android 10; K; wv) AppleWebKit/537.36 (KHTML, like Gecko) '
+            . 'Version/4.0 Chrome/158.0.0.0 Mobile Safari/537.36 MoodleMobile 5.2.4 (52109)');
+        $this->assertTrue(reach::in_app_window());
+        \core_useragent::instance(true, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+            . 'Chrome/120.0 Safari/537.36');
+        $this->assertFalse(reach::in_app_window());
+        \core_useragent::instance(true);
     }
 
     /**
@@ -204,6 +220,8 @@ final class request_test extends \advanced_testcase {
         $this->assertTrue(reach::app((int) $user->id));
 
         $sink = $this->redirectMessages();
+        $this->assertFalse(reach::send($request, false));
+        $this->assertCount(0, $sink->get_messages());
         $this->assertTrue(reach::send($request));
         $messages = $sink->get_messages();
         $this->assertCount(1, $messages);

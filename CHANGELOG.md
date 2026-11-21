@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5-dev (21 November 2026)
+
+- A sign-in in the window of the Moodle app does not send the notice to the app, which would open the numbers under
+  the window, out of sight: there the factor asks only on Telegram or WhatsApp, and does not offer itself to whoever
+  has neither.
+
 ## 0.1.4-dev (21 November 2026)
 
 - The text columns of the table have no empty default, which Moodle does not take.
