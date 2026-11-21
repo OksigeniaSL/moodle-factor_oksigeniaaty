@@ -250,7 +250,13 @@ class factor extends object_factor_base {
     public function setup_factor_form_definition_after_data(\MoodleQuickForm $mform): \MoodleQuickForm {
         global $OUTPUT, $PAGE, $USER;
         $enrolid = (int) $mform->getElement('enrolid')->getValue();
-        $context = ['enrolid' => $enrolid, 'chats' => chats::join_links((int) $USER->id)];
+        $context = [
+            'enrolid' => $enrolid,
+            'chats' => chats::join_links((int) $USER->id),
+            'ownchats' => chats::own((int) $USER->id),
+            'unlinkurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php'))->out(false),
+            'sesskey' => sesskey(),
+        ];
         $code = self::$enrolcodes[$enrolid] ?? '';
         if ($code !== '') {
             $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/enrol.php', ['c' => $code]);

@@ -26,7 +26,10 @@
         "samephone": "moodlemobile://link=https://example.com/admin/tool/mfa/factor/oksigeniaaty/enrol.php?c=x",
         "checkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/check.php?e=3&sesskey=x",
         "minutes": 10,
-        "chats": [{"channel": "telegram", "name": "Telegram", "url": "https://t.me/example_bot?start=x"}]
+        "chats": [{"channel": "telegram", "name": "Telegram", "url": "https://t.me/example_bot?start=x"}],
+        "ownchats": [{"id": 7, "name": "Telegram · Ana", "since": "21/11/26"}],
+        "unlinkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php",
+        "sesskey": "x"
     }
 }}
 <div class="factor-oksigeniaaty-setup"{{#checkurl}} data-oksigeniaaty-enrolcheck="{{checkurl}}"{{/checkurl}}>
@@ -55,4 +58,19 @@
         {{/chats}}
     </ul>
     {{/chats.0}}
+    {{#ownchats.0}}
+    <p>{{#str}} setup:ownchats, factor_oksigeniaaty {{/str}}</p>
+    <ul class="factor-oksigeniaaty-ownchats list-unstyled">
+        {{#ownchats}}
+        <li>
+            <form method="post" action="{{unlinkurl}}">
+                <input type="hidden" name="sesskey" value="{{sesskey}}">
+                <input type="hidden" name="id" value="{{id}}">
+                <span>{{name}}</span> <small>{{#str}} setup:since, factor_oksigeniaaty, {{since}} {{/str}}</small>
+                <button type="submit" class="btn btn-link p-0 align-baseline">{{#str}} setup:remove, factor_oksigeniaaty {{/str}}</button>
+            </form>
+        </li>
+        {{/ownchats}}
+    </ul>
+    {{/ownchats.0}}
 </div>

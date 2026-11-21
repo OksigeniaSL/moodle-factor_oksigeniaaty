@@ -180,7 +180,8 @@ class chats {
             return [];
         }
         try {
-            $code = $api::invite('factor_oksigeniaaty', 0, $userid);
+            // A code that lives as long as the page's QR: whoever sees this page later cannot use it.
+            $code = $api::invite('factor_oksigeniaaty', 0, $userid, '', devices::ENROLLIFE);
             $links = [];
             foreach (['telegram', 'whatsapp'] as $channel) {
                 $url = $api::join_url($channel, $code);
@@ -194,6 +195,45 @@ class chats {
             debugging('Approve from the phone, Marandu: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return [];
         }
+    }
+
+    /**
+     * The chats joined from the setup page, for the person to see them and take away one that is not theirs.
+     *
+     * @param int $userid The person.
+     * @return array Each with id, name (the channel, and the chat's name or the number's last digits) and since.
+     */
+    public static function own(int $userid): array {
+        $api = self::API;
+        if (!self::supported() || !method_exists($api, 'own_chats')) {
+            return [];
+        }
+        $list = [];
+        foreach ($api::own_chats('factor_oksigeniaaty', $userid) as $chat) {
+            $name = get_string('chan:' . $chat['channel'], 'factor_oksigeniaaty');
+            $who = $chat['ending'] !== '' ? '···' . $chat['ending'] : trim($chat['name']);
+            $list[] = [
+                'id' => (int) $chat['id'],
+                'name' => $who !== '' ? $name . ' · ' . $who : $name,
+                'since' => userdate((int) $chat['since'], get_string('strftimedatefullshort', 'langconfig')),
+            ];
+        }
+        return $list;
+    }
+
+    /**
+     * Takes away a chat joined from the setup page: it no longer approves this person's sign-ins.
+     *
+     * @param int $userid The person.
+     * @param int $id The chat, as own() gives it.
+     * @return bool Whether there was one.
+     */
+    public static function unlink(int $userid, int $id): bool {
+        $api = self::API;
+        if (!self::supported() || !method_exists($api, 'unlink_chat')) {
+            return false;
+        }
+        return (bool) $api::unlink_chat('factor_oksigeniaaty', $userid, $id);
     }
 
     /**

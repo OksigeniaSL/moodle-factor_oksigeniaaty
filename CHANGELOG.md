@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3-dev (22 November 2026)
+
+- The code to join a chat lives as long as the page's QR (10 minutes), and a new one cancels the one before
+  (Marandu 0.51.1).
+- The setup page lists the chats that can approve, with «Take away» for one that is not the person's.
+- No more than 6 requests in an hour, besides 3 in a quarter of an hour.
+
 ## 0.2.2-dev (22 November 2026)
 
 - `api::account_reassigned()`: an account given to another person loses the phones its former owner registered,

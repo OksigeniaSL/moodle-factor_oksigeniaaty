@@ -57,6 +57,8 @@ class request {
 
     /** @var int Stopped this many times in a day, no new request until the day is over. */
     public const MAXSTOPPED = 3;
+    /** @var int No more than this many requests in an hour, so the phone is not filled with them. */
+    public const MAXHOUR = 6;
     /** @var int The window of MAXRECENT. */
     public const RECENT = 15 * MINSECS;
     /** @var int How long a request is kept, answered or not. */
@@ -164,7 +166,8 @@ class request {
             return 'stopped';
         }
         $recent = $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?', [$userid, $now - self::RECENT]);
-        return $recent < self::MAXRECENT ? '' : 'toomany';
+        $hour = $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?', [$userid, $now - HOURSECS]);
+        return $recent < self::MAXRECENT && $hour < self::MAXHOUR ? '' : 'toomany';
     }
 
     /**
