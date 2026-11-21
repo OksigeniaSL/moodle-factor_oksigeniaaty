@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1-dev (21 November 2026)
+
+- The notice asks «Is it you?» in its own text, in the person's language; the number is centred on the sign-in
+  screen.
+
 ## 0.1.0-dev (21 November 2026)
 
 - First version: the sign-in screen shows a number, the phone gets a notice with three numbers and «It was not me»,
