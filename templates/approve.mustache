@@ -1,0 +1,64 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template factor_oksigeniaaty/approve
+
+    The request on the web: who is signing in and from where, the three numbers and «It was not me»; or what happened.
+
+    Example context (json):
+    {
+        "pending": true,
+        "requestid": 7,
+        "who": "Someone is signing in to Example School with your account.",
+        "where": "Chrome on Windows, at 9:41",
+        "choices": [{"value": "42"}, {"value": "17"}, {"value": "85"}],
+        "formurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/approve.php",
+        "sesskey": "x",
+        "message": "",
+        "changepassword": "",
+        "approved": false
+    }
+}}
+<div class="factor-oksigeniaaty-approve">
+    {{#pending}}
+    <p>{{who}}</p>
+    <p><strong>{{where}}</strong></p>
+    <p>{{#str}} approve:pick, factor_oksigeniaaty {{/str}}</p>
+    <div class="factor-oksigeniaaty-choices">
+        {{#choices}}
+        <form method="post" action="{{formurl}}">
+            <input type="hidden" name="r" value="{{requestid}}">
+            <input type="hidden" name="choice" value="{{value}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <button type="submit" class="btn btn-primary factor-oksigeniaaty-choice">{{value}}</button>
+        </form>
+        {{/choices}}
+    </div>
+    <form method="post" action="{{formurl}}">
+        <input type="hidden" name="r" value="{{requestid}}">
+        <input type="hidden" name="choice" value="deny">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <button type="submit" class="btn btn-outline-danger w-100">{{#str}} approve:deny, factor_oksigeniaaty {{/str}}</button>
+    </form>
+    {{/pending}}
+    {{^pending}}
+    <p role="status">{{message}}</p>
+    {{#changepassword}}
+    <p><a class="btn btn-primary" href="{{changepassword}}">{{#str}} approve:changepassword, factor_oksigeniaaty {{/str}}</a></p>
+    {{/changepassword}}
+    {{/pending}}
+</div>
