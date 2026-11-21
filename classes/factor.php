@@ -135,6 +135,15 @@ class factor extends object_factor_base {
             'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
             'againurl' => $againurl->out(false),
             'minutes' => (int) ceil(request::validity() / MINSECS),
+            // What is left, counted down on the screen and said to a screen reader at two minutes, one and thirty
+            // seconds: relative to now, so that the computer's clock does not matter.
+            'seconds' => $waiting ? max(0, (int) $request->timecreated + request::validity() - time()) : 0,
+            'lefttext' => get_string('wait:left', 'factor_oksigeniaaty', '%s'),
+            'says' => json_encode([
+                2 * MINSECS => get_string('wait:saytwo', 'factor_oksigeniaaty'),
+                MINSECS => get_string('wait:sayone', 'factor_oksigeniaaty'),
+                30 => get_string('wait:sayhalf', 'factor_oksigeniaaty'),
+            ]),
             'problem' => $problem,
             'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
         ];

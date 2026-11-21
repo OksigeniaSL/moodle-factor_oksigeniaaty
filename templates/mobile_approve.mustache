@@ -26,6 +26,8 @@
         "requestid": 7,
         "who": "Someone is signing in to Example School with your account.",
         "where": "Chrome on Windows, at 9:41",
+        "left": "2 minutes left to answer.",
+        "nobody": "Tap a number only if it is you signing in now. Nobody at the centre will ask you to tap one.",
         "choices": [{"value": "42"}, {"value": "17"}, {"value": "85"}],
         "message": "",
         "title": "",
@@ -39,7 +41,8 @@
     <p><%who%></p>
     <p><strong><%where%></strong></p>
     <ng-container *ngIf="oksigeniaatyEnrolled">
-    <p class="ion-margin-top"><strong><%#str%>approve:pick, factor_oksigeniaaty<%/str%></strong></p>
+    <p class="ion-margin-top"><strong><%#str%>approve:pick, factor_oksigeniaaty<%/str%></strong> <%left%></p>
+    <p><strong><%nobody%></strong></p>
     <ion-grid>
         <ion-row>
 <%#choices%>

@@ -27,6 +27,9 @@
         "expired": false,
         "againurl": "https://example.com/admin/tool/mfa/auth.php?factorname=oksigeniaaty&oksigeniaatyagain=1&sesskey=x",
         "minutes": 3,
+        "seconds": 178,
+        "lefttext": "%s left to approve it on your phone.",
+        "says": "{}",
         "sent": "We have sent a notice to the app on your phone.",
         "problem": "",
         "early": ""
@@ -46,7 +49,9 @@
     <p class="factor-oksigeniaaty-early">{{early}}</p>
     {{/early}}
     </div>
-    <p class="factor-oksigeniaaty-valid">{{#str}} wait:valid, factor_oksigeniaaty, {{minutes}} {{/str}}</p>
+    <p class="factor-oksigeniaaty-valid" data-oksigeniaaty-left="{{seconds}}"
+        data-oksigeniaaty-lefttext="{{lefttext}}">{{#str}} wait:valid, factor_oksigeniaaty, {{minutes}} {{/str}}</p>
+    <p class="visually-hidden sr-only" aria-live="polite" data-oksigeniaaty-says="{{says}}"></p>
     <p class="factor-oksigeniaaty-resend" data-oksigeniaaty-resend hidden>
         {{#str}} wait:resendhint, factor_oksigeniaaty {{/str}}
         <a href="{{againurl}}">{{#str}} wait:resend, factor_oksigeniaaty {{/str}}</a>

@@ -142,5 +142,40 @@
         });
     };
 
+    // What is left, on the screen every second; to a screen reader, only at two minutes, one and thirty seconds.
+    var leftBox = box.querySelector('[data-oksigeniaaty-left]');
+    var sayBox = box.querySelector('[data-oksigeniaaty-says]');
+    var seconds = leftBox ? parseInt(leftBox.getAttribute('data-oksigeniaaty-left'), 10) : 0;
+    if (leftBox && seconds > 0) {
+        var deadline = Date.now() + seconds * 1000;
+        var pattern = leftBox.getAttribute('data-oksigeniaaty-lefttext') || '%s';
+        var says = {};
+        try {
+            says = JSON.parse(sayBox ? sayBox.getAttribute('data-oksigeniaaty-says') : '{}') || {};
+        } catch (e) {
+            says = {};
+        }
+        var said = {};
+        var count = function() {
+            if (done) {
+                return;
+            }
+            var left = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+            var rest = left % 60;
+            leftBox.textContent = pattern.replace('%s', Math.floor(left / 60) + ':' + (rest < 10 ? '0' : '') + rest);
+            Object.keys(says).forEach(function(mark) {
+                var at = parseInt(mark, 10);
+                if (!said[mark] && left <= at && left > at - 5 && sayBox) {
+                    said[mark] = true;
+                    sayBox.textContent = says[mark];
+                }
+            });
+            if (left > 0) {
+                window.setTimeout(count, 1000);
+            }
+        };
+        count();
+    }
+
     window.setTimeout(tick, 2000);
 })();

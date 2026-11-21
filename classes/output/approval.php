@@ -62,6 +62,8 @@ class approval {
                     ),
                 ]),
                 'choices' => $choices,
+                'left' => self::left($request),
+                'nobody' => get_string('approve:nobody', 'factor_oksigeniaaty'),
                 'formurl' => $web ? (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php'))->out(false) : '',
                 'sesskey' => $web ? sesskey() : '',
             ];
@@ -89,5 +91,22 @@ class approval {
             'changepassword' => $changepassword,
             'approved' => $status === request::APPROVED,
         ];
+    }
+
+    /**
+     * How long is left to answer a request, in words, as the page opens.
+     *
+     * @param \stdClass $request A pending request.
+     * @return string
+     */
+    private static function left(\stdClass $request): string {
+        $seconds = (int) $request->timecreated + request::validity() - time();
+        if ($seconds >= 2 * MINSECS) {
+            return get_string('approve:leftminutes', 'factor_oksigeniaaty', intdiv($seconds, MINSECS));
+        }
+        if ($seconds >= MINSECS) {
+            return get_string('approve:leftminute', 'factor_oksigeniaaty');
+        }
+        return get_string('approve:leftseconds', 'factor_oksigeniaaty');
     }
 }
