@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty;
 
 use factor_oksigeniaaty\local\reach;
@@ -87,8 +86,8 @@ class factor extends object_factor_base {
         $again = optional_param('oksigeniaatyagain', 0, PARAM_BOOL) && confirm_sesskey();
         if (!$request || $request->status === request::USED || ($request->status === request::EXPIRED && $again)) {
             if (request::can_create($userid)) {
-                $request = request::create($userid, $sid, request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')),
-                    getremoteaddr());
+                $device = request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+                $request = request::create($userid, $sid, $device, getremoteaddr());
                 if (!reach::send($request)) {
                     $problem = get_string('wait:unsent', 'factor_oksigeniaaty');
                 }
@@ -101,22 +100,31 @@ class factor extends object_factor_base {
         $waiting = $request && in_array($request->status, [request::PENDING, request::APPROVED], true) && $problem === '';
         // Sent before the phone answered: the form does not go on, and says why here, where the number is.
         $early = $waiting && $request->status === request::PENDING && $mform->isSubmitted();
+        $checkurl = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php', [
+            'r' => $request ? $request->id : 0,
+            'sesskey' => sesskey(),
+        ]);
+        $againurl = new \moodle_url('/admin/tool/mfa/auth.php', [
+            'factorname' => 'oksigeniaaty',
+            'oksigeniaatyagain' => 1,
+            'sesskey' => sesskey(),
+        ]);
         $context = [
             'code' => $waiting ? (int) $request->code : null,
             'waiting' => $waiting,
-            'checkurl' => $waiting ? (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php',
-                ['r' => $request->id, 'sesskey' => sesskey()]))->out(false) : '',
+            'checkurl' => $waiting ? $checkurl->out(false) : '',
             'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
-            'againurl' => (new \moodle_url('/admin/tool/mfa/auth.php',
-                ['factorname' => 'oksigeniaaty', 'oksigeniaatyagain' => 1, 'sesskey' => sesskey()]))->out(false),
+            'againurl' => $againurl->out(false),
             'problem' => $problem,
             'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
         ];
         // Raw, not a static element: the form would put it in a narrow column of a row.
         $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
         if ($waiting) {
-            $PAGE->requires->js(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js',
-                ['v' => get_config('factor_oksigeniaaty', 'version')]));
+            $script = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js', [
+                'v' => get_config('factor_oksigeniaaty', 'version'),
+            ]);
+            $PAGE->requires->js($script);
         }
         return $mform;
     }

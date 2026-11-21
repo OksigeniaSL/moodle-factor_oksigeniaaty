@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\local;
 
 /**
@@ -85,8 +84,11 @@ class reach {
     private static function deliver(\stdClass $request, \stdClass $user): bool {
         $where = get_string('where', 'factor_oksigeniaaty', (object) [
             'device' => $request->device,
-            'time' => userdate((int) $request->timecreated, get_string('strftimetime', 'langconfig'),
-                \core_date::get_user_timezone($user)),
+            'time' => userdate(
+                (int) $request->timecreated,
+                get_string('strftimetime', 'langconfig'),
+                \core_date::get_user_timezone($user)
+            ),
         ]);
         $sent = false;
         if (self::app((int) $request->userid)) {

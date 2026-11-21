@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\local;
 
 /**
@@ -112,8 +111,15 @@ class request {
      */
     public static function latest(int $userid): ?\stdClass {
         global $DB;
-        $records = $DB->get_records_select(self::TABLE, 'userid = ? AND timecreated > ?',
-            [$userid, time() - 10 * MINSECS], 'id DESC', '*', 0, 1);
+        $records = $DB->get_records_select(
+            self::TABLE,
+            'userid = ? AND timecreated > ?',
+            [$userid, time() - 10 * MINSECS],
+            'id DESC',
+            '*',
+            0,
+            1
+        );
         $request = reset($records);
         return $request ? self::fresh($request) : null;
     }
@@ -126,8 +132,8 @@ class request {
      */
     public static function can_create(int $userid): bool {
         global $DB;
-        return $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?',
-            [$userid, time() - self::RECENT]) < self::MAXRECENT;
+        $recent = $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?', [$userid, time() - self::RECENT]);
+        return $recent < self::MAXRECENT;
     }
 
     /**
@@ -143,8 +149,7 @@ class request {
     public static function create(int $userid, string $sid, string $device, string $ip): \stdClass {
         global $DB;
         $now = time();
-        $DB->set_field_select(self::TABLE, 'status', self::EXPIRED, 'userid = ? AND status = ?',
-            [$userid, self::PENDING]);
+        $DB->set_field_select(self::TABLE, 'status', self::EXPIRED, 'userid = ? AND status = ?', [$userid, self::PENDING]);
         $DB->delete_records_select(self::TABLE, 'userid = ? AND timecreated < ?', [$userid, $now - self::KEEP]);
 
         $code = random_int(10, 99);

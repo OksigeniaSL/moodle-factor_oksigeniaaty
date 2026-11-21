@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 /**
  * What the browser that signs in asks while it waits: the state of its request. It works before the factor is passed,
  * because the factor lists this page among those that do not wait for it; it only tells about the request of this

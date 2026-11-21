@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\external;
 
 use core_external\external_api;
@@ -53,8 +52,10 @@ class answer extends external_api {
      */
     public static function execute(int $requestid, string $choice): array {
         global $USER;
-        ['requestid' => $requestid, 'choice' => $choice] = self::validate_parameters(self::execute_parameters(),
-            ['requestid' => $requestid, 'choice' => $choice]);
+        ['requestid' => $requestid, 'choice' => $choice] = self::validate_parameters(
+            self::execute_parameters(),
+            ['requestid' => $requestid, 'choice' => $choice]
+        );
         $context = \context_user::instance((int) $USER->id);
         self::validate_context($context);
 

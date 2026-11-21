@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 /**
  * The request on the web, for whoever opens the notice's link outside the app: in another browser where the person is
  * already in, with the factor passed. The browser that is signing in cannot answer here its own request, nor that of

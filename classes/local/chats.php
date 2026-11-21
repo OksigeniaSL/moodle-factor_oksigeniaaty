@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\local;
 
 /**
@@ -67,12 +66,24 @@ class chats {
         if (!class_exists($api) || !method_exists($api, 'ask')) {
             return 0;
         }
-        $params = array_merge([format_string(get_site()->fullname), $where],
-            array_map('strval', request::choices($request)));
+        $params = array_merge(
+            [format_string(get_site()->fullname), $where],
+            array_map('strval', request::choices($request))
+        );
+        $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php', ['r' => $request->id]);
         try {
-            return (int) $api::ask('factor_oksigeniaaty', self::NOTICE, $params, self::ref($request), 0,
-                (int) $request->userid, new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php',
-                ['r' => $request->id]), request::validity(), '', true);
+            return (int) $api::ask(
+                'factor_oksigeniaaty',
+                self::NOTICE,
+                $params,
+                self::ref($request),
+                0,
+                (int) $request->userid,
+                $url,
+                request::validity(),
+                '',
+                true
+            );
         } catch (\Throwable $e) {
             debugging('Approve from the phone, Marandu: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return 0;
@@ -126,8 +137,8 @@ class chats {
         } else {
             return;
         }
-        $status = request::answer((int) $request->id, (int) $request->userid, $choice,
-            \core_text::substr((string) $hook->get_channel(), 0, 20));
+        $channel = \core_text::substr((string) $hook->get_channel(), 0, 20);
+        $status = request::answer((int) $request->id, (int) $request->userid, $choice, $channel);
         $hook->set_reply(self::reply($status));
     }
 

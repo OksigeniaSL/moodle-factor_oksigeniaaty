@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 /**
  * In the Moodle app (and in the apps made from it): the page where the phone approves a sign-in, opened by the link of
  * the notice. No entry in the main menu; the handler is there for its init, which registers the link.

@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\privacy;
 
 use core_privacy\local\metadata\collection;
@@ -36,7 +35,6 @@ class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
-
     /** @var string The table. */
     private const TABLE = 'factor_oksigeniaaty_req';
 
@@ -82,8 +80,11 @@ class provider implements
         if ($context->contextlevel != CONTEXT_USER) {
             return;
         }
-        $userlist->add_from_sql('userid', 'SELECT userid FROM {' . self::TABLE . '} WHERE userid = :userid',
-            ['userid' => $context->instanceid]);
+        $userlist->add_from_sql(
+            'userid',
+            'SELECT userid FROM {' . self::TABLE . '} WHERE userid = :userid',
+            ['userid' => $context->instanceid]
+        );
     }
 
     /**
@@ -110,8 +111,10 @@ class provider implements
                 ];
             }
             if ($requests) {
-                writer::with_context($context)->export_data([get_string('pluginname', 'factor_oksigeniaaty')],
-                    (object) ['requests' => $requests]);
+                writer::with_context($context)->export_data(
+                    [get_string('pluginname', 'factor_oksigeniaaty')],
+                    (object) ['requests' => $requests]
+                );
             }
         }
     }

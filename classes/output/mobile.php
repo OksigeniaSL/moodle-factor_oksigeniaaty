@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\output;
 
 use factor_oksigeniaaty\local\request;
@@ -55,8 +54,10 @@ class mobile {
         return [
             'templates' => [[
                 'id' => 'main',
-                'html' => $OUTPUT->render_from_template('factor_oksigeniaaty/mobile_approve',
-                    approval::context($request, $USER, false)),
+                'html' => $OUTPUT->render_from_template(
+                    'factor_oksigeniaaty/mobile_approve',
+                    approval::context($request, $USER, false)
+                ),
             ]],
             'javascript' => '',
             'otherdata' => '',

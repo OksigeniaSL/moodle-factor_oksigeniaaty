@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty\output;
 
 use factor_oksigeniaaty\local\request;
@@ -52,8 +51,11 @@ class approval {
                 'who' => get_string('approve:who', 'factor_oksigeniaaty', $site),
                 'where' => get_string('where', 'factor_oksigeniaaty', (object) [
                     'device' => $request->device,
-                    'time' => userdate((int) $request->timecreated, get_string('strftimetime', 'langconfig'),
-                        \core_date::get_user_timezone($user)),
+                    'time' => userdate(
+                        (int) $request->timecreated,
+                        get_string('strftimetime', 'langconfig'),
+                        \core_date::get_user_timezone($user)
+                    ),
                 ]),
                 'choices' => $choices,
                 'formurl' => $web ? (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php'))->out(false) : '',

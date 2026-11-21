@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 /**
  * Strings for factor_oksigeniaaty, in English.
  *
@@ -46,12 +45,12 @@ $string['logindesc'] = 'We send a notice to your phone to approve this sign-in.'
 $string['loginoption'] = 'Approve from the phone';
 $string['loginsubmit'] = 'I have approved it';
 $string['logintitle'] = 'Approve the sign-in from your phone';
+$string['marandu:label'] = 'sign-in';
 $string['marandu:login_check'] = 'Approve a sign-in';
 $string['marandu:login_check_button'] = 'Open';
 $string['marandu:login_check_desc'] = 'When someone signs in with the account, to approve it with the number on the screen';
 $string['marandu:login_check_option_deny'] = 'It was not me';
 $string['marandu:login_check_template'] = 'Is it you? Signing in to {{1}}: {{2}}. If it is you, tap the number you see on the screen: {{3}}, {{4}} or {{5}}.';
-$string['marandu:label'] = 'sign-in';
 $string['messageprovider:approval'] = 'Requests to approve a sign-in';
 $string['mobile:title'] = 'Is it you?';
 $string['notify:body'] = 'Is it you? Signing in with your account: {$a}. Tap here and choose the number on the screen.';

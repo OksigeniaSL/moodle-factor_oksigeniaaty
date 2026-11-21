@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-
 namespace factor_oksigeniaaty;
 
 use factor_oksigeniaaty\local\chats;
@@ -104,8 +103,8 @@ final class request_test extends \advanced_testcase {
         $DB->set_field(request::TABLE, 'timeexpires', time() - 1, ['id' => $request->id]);
 
         $this->assertSame(request::EXPIRED, request::for_session((int) $user->id, 'a')->status);
-        $this->assertSame(request::EXPIRED,
-            request::answer((int) $request->id, (int) $user->id, (string) $request->code, 'app'));
+        $status = request::answer((int) $request->id, (int) $user->id, (string) $request->code, 'app');
+        $this->assertSame(request::EXPIRED, $status);
     }
 
     /**
@@ -184,11 +183,15 @@ final class request_test extends \advanced_testcase {
     }
 
     /**
-     * The request reaches the phone as a notice whose link opens it.
+     * The request reaches the phone as a notice whose link opens it. Moodle sends the notices of a factor only while
+     * it is on, which is when it is used.
      */
     public function test_send_to_app(): void {
         global $CFG, $DB;
         $this->resetAfterTest();
+        set_config('enabled', 1, 'tool_mfa');
+        set_config('enabled', 1, 'factor_oksigeniaaty');
+        \core_plugin_manager::reset_caches();
         $user = $this->getDataGenerator()->create_user();
         $CFG->airnotifieraccesskey = 'key';
         $DB->set_field('message_processors', 'enabled', 1, ['name' => 'airnotifier']);
@@ -198,6 +201,7 @@ final class request_test extends \advanced_testcase {
             'timecreated' => time(), 'timemodified' => time(),
         ]);
         $request = request::create((int) $user->id, 'a', 'Chrome on Windows', '10.0.0.1');
+        $this->assertTrue(reach::app((int) $user->id));
 
         $sink = $this->redirectMessages();
         $this->assertTrue(reach::send($request));
