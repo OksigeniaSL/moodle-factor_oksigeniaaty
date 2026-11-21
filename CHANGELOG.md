@@ -1,9 +1,10 @@
 # Changelog
 
-## 0.1.2-dev (21 November 2026)
+## 0.1.3-dev (21 November 2026)
 
 - The notice asks «Is it you?» in its own text, in the person's language; the number is centred on the sign-in
-  screen.
+  screen, with what to do with it next to it; the line above says only what the factor does, also when
+  there is no number to show.
 
 ## 0.1.0-dev (21 November 2026)
 
