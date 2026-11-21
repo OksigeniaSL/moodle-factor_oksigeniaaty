@@ -112,6 +112,8 @@ class reach {
      * @return bool Whether it went anywhere.
      */
     private static function deliver(\stdClass $request, \stdClass $user, bool $toapp): bool {
+        global $OUTPUT;
+
         $where = get_string('where', 'factor_oksigeniaaty', (object) [
             'device' => $request->device,
             'time' => userdate(
@@ -137,6 +139,8 @@ class reach {
             $message->fullmessagehtml = '';
             $message->contexturl = $url->out(false);
             $message->contexturlname = get_string('notify:link', 'factor_oksigeniaaty');
+            // The app draws its own icon only beside notices of activities; anyone else's, it takes from the notice.
+            $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];
             $sent = (bool) message_send($message);
         }
         return chats::ask($request, $where) > 0 || $sent;

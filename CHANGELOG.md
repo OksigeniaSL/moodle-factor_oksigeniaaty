@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4-dev (22 November 2026)
+
+- Its notices in the app carry the plugin's icon instead of the app's generic pencil: the app draws its own icon only
+  beside notices of activities, and takes anyone else's from the notice.
+
 ## 0.2.3-dev (22 November 2026)
 
 - The code to join a chat lives as long as the page's QR (10 minutes), and a new one cancels the one before

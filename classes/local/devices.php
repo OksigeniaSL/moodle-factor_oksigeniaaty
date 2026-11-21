@@ -185,7 +185,7 @@ class devices {
      * @param int $deviceid The phone.
      */
     private static function tell_new_phone(int $userid, int $deviceid): void {
-        global $DB;
+        global $DB, $OUTPUT;
         $user = \core_user::get_user($userid);
         $device = $DB->get_record('tool_mfa', ['id' => $deviceid]);
         if (!$user || !$device) {
@@ -215,6 +215,8 @@ class devices {
             $message->smallmessage = $message->subject;
             $message->contexturl = (new \moodle_url('/admin/tool/mfa/user_preferences.php'))->out(false);
             $message->contexturlname = get_string('newphone:link', 'factor_oksigeniaaty');
+            // The app draws its own icon only beside notices of activities; anyone else's, it takes from the notice.
+            $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];
             message_send($message);
         } finally {
             force_current_language($language);
