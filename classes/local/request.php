@@ -50,7 +50,13 @@ class request {
     public const DENY = 'deny';
 
     /** @var int Requests a person can get in RECENT seconds: more is someone pressing on. */
-    public const MAXRECENT = 5;
+    public const MAXRECENT = 3;
+
+    /** @var int After a sign-in stopped from the phone, no new request for this long. */
+    public const COOLDOWN = 30 * MINSECS;
+
+    /** @var int Stopped this many times in a day, no new request until the day is over. */
+    public const MAXSTOPPED = 3;
     /** @var int The window of MAXRECENT. */
     public const RECENT = 15 * MINSECS;
     /** @var int How long a request is kept, answered or not. */
@@ -131,9 +137,46 @@ class request {
      * @return bool
      */
     public static function can_create(int $userid): bool {
+        return self::held_back($userid) === '';
+    }
+
+    /**
+     * Why a person cannot get another request now, if they cannot: a sign-in stopped from the phone holds them back
+     * for a while (a day, after three), and so do many requests in a row. Whoever has the password and tries again
+     * and again does not get a new chance every few minutes.
+     *
+     * @param int $userid The person.
+     * @return string stopped, toomany, or empty if they can.
+     */
+    public static function held_back(int $userid): string {
         global $DB;
-        $recent = $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?', [$userid, time() - self::RECENT]);
-        return $recent < self::MAXRECENT;
+        $now = time();
+        [$insql, $params] = $DB->get_in_or_equal([self::DENIED, self::WRONG]);
+        $stopped = $DB->get_records_select(
+            self::TABLE,
+            "userid = ? AND status $insql AND timeanswered > ?",
+            array_merge([$userid], $params, [$now - DAYSECS]),
+            'timeanswered DESC',
+            'id, timeanswered'
+        );
+        $last = $stopped ? (int) reset($stopped)->timeanswered : 0;
+        if ($last > $now - self::COOLDOWN || count($stopped) >= self::MAXSTOPPED) {
+            return 'stopped';
+        }
+        $recent = $DB->count_records_select(self::TABLE, 'userid = ? AND timecreated > ?', [$userid, $now - self::RECENT]);
+        return $recent < self::MAXRECENT ? '' : 'toomany';
+    }
+
+    /**
+     * A request that could not be sent, or that another way of signing in made unnecessary, stops waiting.
+     *
+     * @param \stdClass $request The request.
+     */
+    public static function expire(\stdClass $request): void {
+        global $DB;
+        $DB->set_field(self::TABLE, 'status', self::EXPIRED, ['id' => $request->id, 'status' => self::PENDING]);
+        $request->status = self::EXPIRED;
+        chats::close($request, 'expired');
     }
 
     /**
@@ -225,17 +268,35 @@ class request {
             } else {
                 $status = self::WRONG;
             }
-            $DB->update_record(self::TABLE, (object) [
-                'id' => $request->id,
-                'status' => $status,
-                'via' => \core_text::substr($via, 0, 20),
-                'timeanswered' => time(),
-            ]);
+            // Only while it still waits: a newer request may have expired it between the reading and now.
+            $DB->execute(
+                'UPDATE {' . self::TABLE . '} SET status = ?, via = ?, timeanswered = ? WHERE id = ? AND status = ?',
+                [$status, \core_text::substr($via, 0, 20), time(), $request->id, self::PENDING]
+            );
+            $status = (string) $DB->get_field(self::TABLE, 'status', ['id' => $request->id]);
         } finally {
             $lock->release();
         }
         chats::close($request, 'answered');
+        if ($status === self::DENIED || $status === self::WRONG) {
+            self::end_session($request);
+        }
         return $status;
+    }
+
+    /**
+     * The browser of a stopped sign-in loses its session at once: whoever was signing in cannot try another factor
+     * with it. The request keeps only a hash of the session, so it is found among the person's sessions.
+     *
+     * @param \stdClass $request The request.
+     */
+    private static function end_session(\stdClass $request): void {
+        global $DB;
+        foreach ($DB->get_fieldset_select('sessions', 'sid', 'userid = ?', [$request->userid]) as $sid) {
+            if (hash_equals((string) $request->sid, hash('sha256', (string) $sid))) {
+                \core\session\manager::destroy($sid);
+            }
+        }
     }
 
     /**

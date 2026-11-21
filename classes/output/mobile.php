@@ -41,8 +41,103 @@ class mobile {
         ];
     }
 
+    /** @var string The page's script: the key of this phone, kept by the app per account, and the signed answers. */
+    private const KEYS_JS = <<<'JS'
+var self = this;
+var site = this.CoreSitesProvider.getCurrentSite();
+var storekey = 'factor_oksigeniaaty_' + site.getId();
+var stored = function () {
+    try {
+        return JSON.parse(window.localStorage.getItem(storekey) || 'null');
+    } catch (e) {
+        return null;
+    }
+};
+var tobase64 = function (bytes) {
+    var text = '';
+    for (var i = 0; i < bytes.length; i++) {
+        text += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(text);
+};
+var frombase64 = function (text) {
+    var raw = window.atob(text);
+    var bytes = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) {
+        bytes[i] = raw.charCodeAt(i);
+    }
+    return bytes;
+};
+this.oksigeniaatyEnrolled = !!stored();
+this.oksigeniaatyBusy = false;
+this.oksigeniaatyFailed = false;
+this.oksigeniaatyAnswer = function (requestid, choice) {
+    var keys = stored();
+    var subtle = window.crypto && window.crypto.subtle;
+    if (!keys || !subtle) {
+        self.oksigeniaatyEnrolled = false;
+        return;
+    }
+    self.oksigeniaatyBusy = true;
+    self.oksigeniaatyFailed = false;
+    return subtle.importKey('raw', frombase64(keys.secret), {name: 'HMAC', hash: 'SHA-256'}, false, ['sign'])
+        .then(function (key) {
+            return subtle.sign('HMAC', key, new TextEncoder().encode(requestid + ':' + choice));
+        })
+        .then(function (signature) {
+            return site.write('factor_oksigeniaaty_answer', {
+                requestid: requestid,
+                choice: String(choice),
+                device: keys.device,
+                proof: tobase64(new Uint8Array(signature)),
+            }, {getFromCache: false, saveToCache: false});
+        })
+        .then(function (result) {
+            if (result && result.status === 'notenrolled') {
+                window.localStorage.removeItem(storekey);
+                self.oksigeniaatyEnrolled = false;
+                return;
+            }
+            return self.refreshContent(false);
+        })
+        .catch(function () {
+            self.oksigeniaatyFailed = true;
+        })
+        .finally(function () {
+            self.oksigeniaatyBusy = false;
+        });
+};
+this.oksigeniaatyEnrol = function () {
+    var code = self.CONTENT_OTHERDATA.code;
+    var keys = stored();
+    if (keys && keys.code === code) {
+        self.oksigeniaatyState = 'done';
+        return;
+    }
+    self.oksigeniaatyState = 'working';
+    var label = window.device && window.device.model ? String(window.device.model) : '';
+    return site.write('factor_oksigeniaaty_enrol', {code: code, label: label}, {getFromCache: false, saveToCache: false})
+        .then(function (result) {
+            if (result && result.registered) {
+                window.localStorage.setItem(storekey, JSON.stringify({device: result.device, secret: result.secret, code: code}));
+                self.oksigeniaatyEnrolled = true;
+                self.oksigeniaatyState = 'done';
+            } else {
+                self.oksigeniaatyState = 'failed';
+            }
+        })
+        .catch(function () {
+            self.oksigeniaatyState = 'failed';
+        });
+};
+if (this.CONTENT_OTHERDATA && this.CONTENT_OTHERDATA.code) {
+    this.oksigeniaatyEnrol();
+}
+JS;
+
     /**
-     * The request: who is signing in, from where, the three numbers and «It was not me»; or what happened to it.
+     * The request: who is signing in, from where, the three numbers and «It was not me»; or what happened to it. The
+     * answer goes signed with this phone's key; a phone without it is told how to register.
      *
      * @param array $args The request (r), from the notice's link; without it, the one waiting.
      * @return array
@@ -59,8 +154,26 @@ class mobile {
                     approval::context($request, $USER, false)
                 ),
             ]],
-            'javascript' => '',
-            'otherdata' => '',
+            'javascript' => self::KEYS_JS,
+            'otherdata' => ['code' => ''],
+        ];
+    }
+
+    /**
+     * Register this phone with the code of the setup page: the app gets its key and keeps it.
+     *
+     * @param array $args The code (c), from the link or the QR.
+     * @return array
+     */
+    public static function mobile_enrol_view(array $args): array {
+        global $OUTPUT;
+        return [
+            'templates' => [[
+                'id' => 'main',
+                'html' => $OUTPUT->render_from_template('factor_oksigeniaaty/mobile_enrol', []),
+            ]],
+            'javascript' => self::KEYS_JS,
+            'otherdata' => ['code' => clean_param((string) ($args['c'] ?? ''), PARAM_ALPHANUM)],
         ];
     }
 }

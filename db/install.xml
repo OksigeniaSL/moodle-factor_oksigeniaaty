@@ -28,5 +28,23 @@
         <INDEX NAME="status-timecreated" UNIQUE="false" FIELDS="status, timecreated"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="factor_oksigeniaaty_enrol" COMMENT="Each code to register a phone, shown on a page that passed another factor">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The person whose phone it registers"/>
+        <FIELD NAME="codehash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="SHA-256 of the code; the code itself is only in the QR and the link"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, done or expired"/>
+        <FIELD NAME="toolmfaid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The phone registered with it, a row of tool_mfa"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeexpires" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="codehash" UNIQUE="false" FIELDS="codehash"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

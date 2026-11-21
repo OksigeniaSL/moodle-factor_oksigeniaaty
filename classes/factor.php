@@ -17,6 +17,7 @@
 namespace factor_oksigeniaaty;
 
 use factor_oksigeniaaty\local\chats;
+use factor_oksigeniaaty\local\devices;
 use factor_oksigeniaaty\local\reach;
 use factor_oksigeniaaty\local\request;
 use stdClass;
@@ -27,8 +28,9 @@ use tool_mfa\plugininfo\factor as states;
  * «Approve from the phone»: the sign-in screen shows a number, the phone gets a notice with three numbers and «It was
  * not me», and the person taps the one on the screen. The screen goes on by itself as soon as the phone answers.
  *
- * Nothing to set up: the factor offers itself to whoever has the app on a phone that gets the site's notices, or a
- * chat of Oksigenia Marandu where it can ask them.
+ * The phone that approves is registered first, from the multi-factor preferences, which wait for another factor: a
+ * QR that the app reads, and from which it gets a key of its own; or a chat of Oksigenia Marandu joined with a link of
+ * that same page. Whoever only has the password can get a token of the app, but not that key nor that link.
  *
  * @package    factor_oksigeniaaty
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
@@ -40,6 +42,9 @@ class factor extends object_factor_base {
 
     /** @var bool[] Whether each person can get a request, for this request of the browser. */
     private static $reachable = [];
+
+    /** @var string The code of the registration this setup page shows, only while it is built. */
+    private $enrolcode = '';
 
     /**
      * Whether the person can get a request somewhere, once per page.
@@ -79,8 +84,10 @@ class factor extends object_factor_base {
         $sid = request::session_hash();
         $request = request::for_session($userid, $sid);
         if ($request && in_array($request->status, [request::DENIED, request::WRONG], true)) {
-            // The phone stopped it: the factor fails, and a page of its own says why and ends the session.
+            // The phone stopped it: the factor fails and counts a failure, and a page of its own says why and ends
+            // the session.
             $this->set_state(states::STATE_FAIL);
+            $this->increment_lock_counter();
             redirect(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/stopped.php'));
         }
 
@@ -89,14 +96,16 @@ class factor extends object_factor_base {
         // Another one when there is none, or when the person asks for it: the one waiting expired, or never arrived.
         $renew = $again && in_array($request->status ?? '', [request::EXPIRED, request::PENDING], true);
         if (!$request || $request->status === request::USED || $renew) {
-            if (request::can_create($userid)) {
+            $held = request::held_back($userid);
+            if ($held === '') {
                 $device = request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
                 $request = request::create($userid, $sid, $device, getremoteaddr());
                 if (!reach::send($request, !reach::in_app_window())) {
+                    request::expire($request);
                     $problem = get_string('wait:unsent', 'factor_oksigeniaaty');
                 }
             } else {
-                $problem = get_string('wait:toomany', 'factor_oksigeniaaty');
+                $problem = get_string('wait:' . $held, 'factor_oksigeniaaty');
                 $request = $request && $request->status !== request::USED ? $request : null;
             }
         }
@@ -148,47 +157,159 @@ class factor extends object_factor_base {
     public function login_form_validation(array $data): array {
         global $USER;
         $request = request::for_session((int) $USER->id, request::session_hash());
-        if ($request && $request->status === request::APPROVED) {
+        if ($request && $request->status === request::APPROVED
+                && (int) $request->timeanswered > time() - request::validity()) {
             return [];
         }
         return ['oksigeniaatywait' => get_string('error:notapproved', 'factor_oksigeniaaty')];
     }
 
     /**
-     * The approved request cannot be used again.
+     * The approved request cannot be used again; one still waiting (the person went in another way) stops waiting,
+     * on the phone and on the chats.
      */
     public function post_pass_state(): void {
         global $USER;
         $request = request::for_session((int) $USER->id, request::session_hash());
         if ($request && $request->status === request::APPROVED) {
             request::mark_used((int) $request->id);
+        } else if ($request && $request->status === request::PENDING) {
+            request::expire($request);
         }
         parent::post_pass_state();
     }
 
     /**
-     * One record of the factor for each person, made the first time, as the email factor does: there is nothing to
-     * set up, the phone is the one where the app is.
+     * The registered phones of a person, as tool_mfa lists them in its preferences, revoked ones too.
      *
      * @param stdClass $user The person.
      * @return array
      */
     public function get_all_user_factors(stdClass $user): array {
         global $DB;
-        $records = $DB->get_records('tool_mfa', ['userid' => $user->id, 'factor' => $this->name]);
-        if ($records) {
-            return $records;
+        return $DB->get_records_select(
+            'tool_mfa',
+            "userid = ? AND factor = ? AND secret IS NOT NULL AND secret <> ''",
+            [$user->id, $this->name]
+        );
+    }
+
+    /**
+     * A phone is registered before it approves.
+     *
+     * @return bool
+     */
+    public function has_setup(): bool {
+        return true;
+    }
+
+    /**
+     * The button to register a phone, in the preferences.
+     *
+     * @return bool
+     */
+    public function show_setup_buttons(): bool {
+        return true;
+    }
+
+    /**
+     * A registered phone can be removed, for a lost or a changed one.
+     *
+     * @return bool
+     */
+    public function has_revoke(): bool {
+        return true;
+    }
+
+    /**
+     * The registration: a new code, which only lives in the QR and the link of this page.
+     *
+     * @param \MoodleQuickForm $mform The form.
+     * @return \MoodleQuickForm
+     */
+    public function setup_factor_form_definition(\MoodleQuickForm $mform): \MoodleQuickForm {
+        global $USER;
+        $enrolid = optional_param('enrolid', 0, PARAM_INT);
+        if (!$enrolid || !devices::enrolment($enrolid, (int) $USER->id)) {
+            [$enrolid, $this->enrolcode] = devices::new_enrolment((int) $USER->id);
         }
-        $record = (object) [
-            'userid' => $user->id,
-            'factor' => $this->name,
-            'label' => get_string('label', 'factor_oksigeniaaty'),
-            'createdfromip' => $user->lastip ?? '',
-            'timecreated' => time(),
-            'revoked' => 0,
-        ];
-        $record->id = $DB->insert_record('tool_mfa', $record);
-        return [$record];
+        $mform->addElement('hidden', 'enrolid', $enrolid);
+        $mform->setType('enrolid', PARAM_INT);
+        return $mform;
+    }
+
+    /**
+     * The QR to read with the app, the link for this same phone, the chats to join, and the wait until the app has
+     * registered it.
+     *
+     * @param \MoodleQuickForm $mform The form.
+     * @return \MoodleQuickForm
+     */
+    public function setup_factor_form_definition_after_data(\MoodleQuickForm $mform): \MoodleQuickForm {
+        global $OUTPUT, $PAGE, $USER;
+        $enrolid = (int) $mform->getElementValue('enrolid');
+        $context = ['enrolid' => $enrolid, 'chats' => chats::join_links((int) $USER->id)];
+        if ($this->enrolcode !== '') {
+            $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/enrol.php', ['c' => $this->enrolcode]);
+            $qrcode = new \core_qrcode($url->out(false));
+            $context += [
+                'qr' => 'data:image/png;base64,' . base64_encode($qrcode->getBarcodePngData(6, 6)),
+                'samephone' => reach::app_link($url),
+                'checkurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php', [
+                    'e' => $enrolid,
+                    'sesskey' => sesskey(),
+                ]))->out(false),
+                'minutes' => (int) (devices::ENROLLIFE / MINSECS),
+            ];
+        }
+        $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/setup', $context));
+        $PAGE->requires->js(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js', [
+            'v' => get_config('factor_oksigeniaaty', 'version'),
+        ]));
+        return $mform;
+    }
+
+    /**
+     * The registration is done when the app registered the phone with this page's code.
+     *
+     * @param array $data The form.
+     * @return array Errors.
+     */
+    public function setup_factor_form_validation(array $data): array {
+        global $USER;
+        $enrol = devices::enrolment((int) ($data['enrolid'] ?? 0), (int) $USER->id);
+        if ($enrol && $enrol->status === devices::DONE && (int) $enrol->toolmfaid > 0) {
+            return [];
+        }
+        return ['enrolid' => get_string('setup:notyet', 'factor_oksigeniaaty')];
+    }
+
+    /**
+     * The phone the app registered with this page's code.
+     *
+     * @param stdClass $data The form.
+     * @return stdClass|null
+     */
+    public function setup_user_factor(stdClass $data): stdClass|null {
+        global $DB, $USER;
+        $enrol = devices::enrolment((int) ($data->enrolid ?? 0), (int) $USER->id);
+        if (!$enrol || $enrol->status !== devices::DONE) {
+            return null;
+        }
+        $record = $DB->get_record('tool_mfa', ['id' => $enrol->toolmfaid, 'userid' => $USER->id, 'factor' => $this->name]);
+        if ($record) {
+            $this->create_event_after_factor_setup($USER);
+        }
+        return $record ?: null;
+    }
+
+    /**
+     * The button of the setup page, once the app has registered the phone.
+     *
+     * @return string|null
+     */
+    public function setup_factor_form_submit_button_string(): ?string {
+        return get_string('setup:done', 'factor_oksigeniaaty');
     }
 
     /**
@@ -208,6 +329,11 @@ class factor extends object_factor_base {
      */
     public function get_state(): string {
         global $USER;
+        // Stopped from the phone: it fails, on any page, before the person can try another factor with this session.
+        $request = request::for_session((int) $USER->id, request::session_hash());
+        if ($request && in_array($request->status, [request::DENIED, request::WRONG], true)) {
+            return states::STATE_FAIL;
+        }
         if (!self::ready((int) $USER->id)) {
             return states::STATE_NEUTRAL;
         }
@@ -221,7 +347,7 @@ class factor extends object_factor_base {
      * @return array
      */
     public function possible_states(stdClass $user): array {
-        if (!self::ready((int) $user->id)) {
+        if (!self::ready((int) $user->id) && !devices::active((int) $user->id)) {
             return [states::STATE_NEUTRAL];
         }
         return [states::STATE_FAIL, states::STATE_PASS, states::STATE_NEUTRAL, states::STATE_UNKNOWN];

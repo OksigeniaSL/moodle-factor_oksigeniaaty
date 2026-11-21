@@ -14,8 +14,9 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * In the app, the link of the notice opens the page of the request, answered with the app's own session, instead of
- * the site in a window that would ask for the factor again.
+ * In the app, the link of the notice opens the page of the request, answered with the app's own session and this
+ * phone's key, instead of the site in a window that would ask for the factor again; and the setup page's link
+ * registers this phone.
  *
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -45,3 +46,27 @@ class OksigeniaAtyApproveLinks extends that.CoreContentLinksHandlerBase {
 }
 
 that.CoreContentLinksDelegate.registerHandler(new OksigeniaAtyApproveLinks());
+
+// The setup page's QR or link: this phone registers itself, with the app's own session.
+class OksigeniaAtyEnrolLinks extends that.CoreContentLinksHandlerBase {
+    constructor() {
+        super();
+        this.name = 'factor_oksigeniaaty_enrol';
+        this.pattern = /\/admin\/tool\/mfa\/factor\/oksigeniaaty\/enrol\.php\?(?:[^#]*&)?c=[0-9a-zA-Z]+/;
+    }
+
+    getActions(siteIds, url, params) {
+        const args = {c: String(params.c || '').replace(/[^0-9a-zA-Z]/g, '')};
+        return [{
+            action: (siteId) => that.CoreNavigatorService.navigateToSitePath(
+                'siteplugins/content/factor_oksigeniaaty/mobile_enrol_view/' + that.Md5.hashAsciiStr(JSON.stringify(args)),
+                {
+                    params: {title: that.TranslateService.instant('plugin.factor_oksigeniaaty.enrol:title'), args},
+                    siteId,
+                }
+            ),
+        }];
+    }
+}
+
+that.CoreContentLinksDelegate.registerHandler(new OksigeniaAtyEnrolLinks());

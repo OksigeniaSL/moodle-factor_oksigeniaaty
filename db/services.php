@@ -33,4 +33,12 @@ $functions = [
         'loginrequired' => true,
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'factor_oksigeniaaty_enrol' => [
+        'classname' => \factor_oksigeniaaty\external\enrol::class,
+        'description' => 'Registers this phone to approve sign-ins, with the code of a page that passed another factor.',
+        'type' => 'write',
+        'ajax' => false,
+        'loginrequired' => true,
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
 ];

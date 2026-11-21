@@ -39,6 +39,9 @@ function factor_oksigeniaaty_oksigeniamarandu_notices(): array {
             'uncapped' => true,
             'channels' => ['telegram', 'whatsapp'],
             'perweek' => 1,
+            // Only the chats joined with a code of this factor's setup page, which waits for another factor: never the
+            // ones joined from the account settings, which a token of the app reaches with the password alone.
+            'ownjoin' => true,
         ],
     ];
 }

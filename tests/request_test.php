@@ -17,6 +17,7 @@
 namespace factor_oksigeniaaty;
 
 use factor_oksigeniaaty\local\chats;
+use factor_oksigeniaaty\local\devices;
 use factor_oksigeniaaty\local\reach;
 use factor_oksigeniaaty\local\request;
 
@@ -29,8 +30,22 @@ use factor_oksigeniaaty\local\request;
  * @covers     \factor_oksigeniaaty\local\request
  * @covers     \factor_oksigeniaaty\local\reach
  * @covers     \factor_oksigeniaaty\local\chats
+ * @covers     \factor_oksigeniaaty\local\devices
+ * @covers     \factor_oksigeniaaty\external\answer
+ * @covers     \factor_oksigeniaaty\external\enrol
  */
 final class request_test extends \advanced_testcase {
+    /**
+     * The factor on, as it is when it is used: Moodle sends the notices of a factor only while it is on.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest();
+        set_config('enabled', 1, 'tool_mfa');
+        set_config('enabled', 1, 'factor_oksigeniaaty');
+        \core_plugin_manager::reset_caches();
+    }
+
     /**
      * Three different numbers, the right one among them, none that looks like another at a glance.
      */
@@ -175,6 +190,10 @@ final class request_test extends \advanced_testcase {
             'platform' => 'Android', 'version' => '15', 'pushid' => 'p', 'uuid' => 'u', 'publickey' => null,
             'timecreated' => time(), 'timemodified' => time(),
         ]);
+        // The app on a phone is not enough: the phone has to be registered for the factor, with its key.
+        $this->assertFalse(reach::app($userid));
+        [, $code] = devices::new_enrolment($userid);
+        $this->assertNotNull(devices::complete($code, $userid, 'Pixel 8'));
         $this->assertTrue(reach::app($userid));
         $this->assertTrue(reach::any($userid));
 
@@ -204,10 +223,6 @@ final class request_test extends \advanced_testcase {
      */
     public function test_send_to_app(): void {
         global $CFG, $DB;
-        $this->resetAfterTest();
-        set_config('enabled', 1, 'tool_mfa');
-        set_config('enabled', 1, 'factor_oksigeniaaty');
-        \core_plugin_manager::reset_caches();
         $user = $this->getDataGenerator()->create_user();
         $CFG->airnotifieraccesskey = 'key';
         $DB->set_field('message_processors', 'enabled', 1, ['name' => 'airnotifier']);
@@ -216,10 +231,13 @@ final class request_test extends \advanced_testcase {
             'platform' => 'Android', 'version' => '15', 'pushid' => 'p', 'uuid' => 'u', 'publickey' => null,
             'timecreated' => time(), 'timemodified' => time(),
         ]);
+        [, $code] = devices::new_enrolment((int) $user->id);
+        devices::complete($code, (int) $user->id, 'Pixel 8');
         $request = request::create((int) $user->id, 'a', 'Chrome on Windows', '10.0.0.1');
         $this->assertTrue(reach::app((int) $user->id));
 
         $sink = $this->redirectMessages();
+        $sink->clear();
         $this->assertFalse(reach::send($request, false));
         $this->assertCount(0, $sink->get_messages());
         $this->assertTrue(reach::send($request));
@@ -230,6 +248,108 @@ final class request_test extends \advanced_testcase {
         $this->assertStringContainsString('approve.php?r=' . $request->id, $messages[0]->contexturl);
         $this->assertStringContainsString('Chrome on Windows', $messages[0]->smallmessage);
         $this->assertStringNotContainsString((string) $request->code, $messages[0]->smallmessage);
+    }
+
+    /**
+     * A code registers one phone, once, for its own person, while it lasts; the phone gets its key then and only then.
+     */
+    public function test_enrolment(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $other = $this->getDataGenerator()->create_user();
+        $userid = (int) $user->id;
+
+        [$id, $code] = devices::new_enrolment($userid);
+        $this->assertSame(devices::PENDING, devices::enrolment($id, $userid)->status);
+        $this->assertNull(devices::enrolment($id, (int) $other->id));
+        $this->assertNull(devices::complete($code, (int) $other->id, 'Intruder'));
+
+        [$device, $secret] = devices::complete($code, $userid, 'Pixel 8');
+        $this->assertSame(32, strlen(base64_decode($secret, true)));
+        $this->assertSame(devices::DONE, devices::enrolment($id, $userid)->status);
+        $this->assertSame($device, (int) devices::enrolment($id, $userid)->toolmfaid);
+        $this->assertNull(devices::complete($code, $userid, 'Again'));
+        $this->assertCount(1, devices::active($userid));
+        $this->assertFalse($DB->record_exists(devices::ENROLTABLE, ['codehash' => $code]));
+
+        [$id2, $code2] = devices::new_enrolment($userid);
+        $DB->set_field(devices::ENROLTABLE, 'timeexpires', time() - 1, ['id' => $id2]);
+        $this->assertNull(devices::complete($code2, $userid, 'Late'));
+        $this->assertSame(devices::EXPIRED, devices::enrolment($id2, $userid)->status);
+    }
+
+    /**
+     * Only the phone's own signature of «request:choice» counts; a revoked phone does not answer.
+     */
+    public function test_verify(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $userid = (int) $user->id;
+        [, $code] = devices::new_enrolment($userid);
+        [$device, $secret] = devices::complete($code, $userid, 'Pixel 8');
+        $sign = fn(string $message, string $key) => base64_encode(hash_hmac('sha256', $message, base64_decode($key), true));
+
+        $this->assertTrue(devices::verify($device, $userid, '7:42', $sign('7:42', $secret)));
+        $this->assertFalse(devices::verify($device, $userid, '7:43', $sign('7:42', $secret)));
+        $this->assertFalse(devices::verify($device, $userid, '7:42', $sign('7:42', base64_encode(random_bytes(32)))));
+        $this->assertFalse(devices::verify($device, $userid, '7:42', 'not base64 !'));
+        $other = $this->getDataGenerator()->create_user();
+        $this->assertFalse(devices::verify($device, (int) $other->id, '7:42', $sign('7:42', $secret)));
+
+        $DB->set_field('tool_mfa', 'revoked', 1, ['id' => $device]);
+        $this->assertFalse(devices::verify($device, $userid, '7:42', $sign('7:42', $secret)));
+    }
+
+    /**
+     * The app's answer counts only with the phone's signature: a token alone, which the password gives, does not.
+     */
+    public function test_answer_service_needs_the_key(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $userid = (int) $user->id;
+        $this->setUser($user);
+        [, $code] = devices::new_enrolment($userid);
+        [$device, $secret] = devices::complete($code, $userid, 'Pixel 8');
+        $request = request::create($userid, 'a', 'Chrome on Windows', '10.0.0.1');
+        $choice = (string) $request->code;
+
+        $result = \factor_oksigeniaaty\external\answer::execute((int) $request->id, $choice, $device, base64_encode('nothing'));
+        $this->assertSame('notenrolled', $result['status']);
+        $this->assertSame(request::PENDING, request::get((int) $request->id, $userid)->status);
+
+        $proof = base64_encode(hash_hmac('sha256', $request->id . ':' . $choice, base64_decode($secret), true));
+        $result = \factor_oksigeniaaty\external\answer::execute((int) $request->id, $choice, $device, $proof);
+        $this->assertSame(request::APPROVED, $result['status']);
+    }
+
+    /**
+     * A sign-in stopped from the phone holds back new requests for a while, and three in a day for the day.
+     */
+    public function test_held_back_after_stopped(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $userid = (int) $user->id;
+        $this->assertSame('', request::held_back($userid));
+
+        $request = request::create($userid, 'a', 'Chrome on Windows', '10.0.0.1');
+        request::answer((int) $request->id, $userid, request::DENY, 'app');
+        $this->assertSame('stopped', request::held_back($userid));
+        $this->assertFalse(request::can_create($userid));
+
+        $DB->set_field(request::TABLE, 'timeanswered', time() - request::COOLDOWN - 60, ['id' => $request->id]);
+        $DB->set_field(request::TABLE, 'timecreated', time() - request::RECENT - 60, ['id' => $request->id]);
+        $this->assertSame('', request::held_back($userid));
+
+        foreach (['b', 'c'] as $sid) {
+            $more = request::create($userid, $sid, 'Chrome on Windows', '10.0.0.1');
+            request::answer((int) $more->id, $userid, request::DENY, 'app');
+            $DB->set_field(request::TABLE, 'timeanswered', time() - request::COOLDOWN - 60, ['id' => $more->id]);
+            $DB->set_field(request::TABLE, 'timecreated', time() - request::RECENT - 60, ['id' => $more->id]);
+        }
+        $this->assertSame('stopped', request::held_back($userid));
     }
 
     /**

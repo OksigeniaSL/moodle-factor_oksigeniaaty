@@ -1,0 +1,37 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+{{!
+    @template factor_oksigeniaaty/enrol
+
+    Where the setup QR leads when read with the phone's camera: open it in the app, which registers the phone.
+
+    Example context (json):
+    {
+        "title": "Register this phone",
+        "applink": "moodlemobile://link=https://example.com/admin/tool/mfa/factor/oksigeniaaty/enrol.php?c=x"
+    }
+}}
+<div class="factor-oksigeniaaty-stopped">
+    <h2>{{title}}</h2>
+    {{#applink}}
+    <p>{{#str}} enrolpage:intro, factor_oksigeniaaty {{/str}}</p>
+    <p><a class="btn btn-primary" href="{{applink}}">{{#str}} enrolpage:open, factor_oksigeniaaty {{/str}}</a></p>
+    <p>{{#str}} enrolpage:noapp, factor_oksigeniaaty {{/str}}</p>
+    {{/applink}}
+    {{^applink}}
+    <p>{{#str}} enrolpage:nocode, factor_oksigeniaaty {{/str}}</p>
+    {{/applink}}
+</div>

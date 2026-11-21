@@ -36,4 +36,12 @@ $messageproviders = [
             'oksigeniamarandu' => MESSAGE_DISALLOWED,
         ],
     ],
+    // A new phone can approve the person's sign-ins: by email too, where whoever registered it is least likely to be.
+    'newphone' => [
+        'defaults' => [
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
 ];

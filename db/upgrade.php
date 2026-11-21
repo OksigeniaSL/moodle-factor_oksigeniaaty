@@ -42,5 +42,28 @@ function xmldb_factor_oksigeniaaty_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026112104, 'factor', 'oksigeniaaty');
     }
 
+    if ($oldversion < 2026112200) {
+        // The codes to register a phone.
+        $table = new xmldb_table('factor_oksigeniaaty_enrol');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('codehash', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'pending');
+        $table->add_field('toolmfaid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timeexpires', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_index('codehash', XMLDB_INDEX_NOTUNIQUE, ['codehash']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        // Before 0.2 every person got an empty row of the factor without registering anything: a phone now has a key.
+        $DB->delete_records_select('tool_mfa', "factor = ? AND (secret IS NULL OR secret = '')", ['oksigeniaaty']);
+        // Requests made before 0.2 were answered without a key: none stays open.
+        $DB->set_field('factor_oksigeniaaty_req', 'status', 'expired', ['status' => 'pending']);
+        upgrade_plugin_savepoint(true, 2026112200, 'factor', 'oksigeniaaty');
+    }
+
     return true;
 }

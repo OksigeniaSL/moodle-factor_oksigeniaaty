@@ -23,6 +23,53 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {
+    // The setup page: wait until the app has registered the phone with this page's code, then go on by itself.
+    var setup = document.querySelector('[data-oksigeniaaty-enrolcheck]');
+    if (setup && window.fetch) {
+        var setupform = setup.closest ? setup.closest('form') : null;
+        var submit = setupform ? setupform.querySelector('[type="submit"]:not([name="cancel"])') : null;
+        if (submit) {
+            submit.hidden = true;
+        }
+        var enrolurl = setup.getAttribute('data-oksigeniaaty-enrolcheck');
+        var enrolled = false;
+        var enroltick = function() {
+            window.fetch(enrolurl, {credentials: 'same-origin', cache: 'no-store'}).then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                if (enrolled) {
+                    return;
+                }
+                if (data.status === 'pending') {
+                    window.setTimeout(enroltick, 2000);
+                } else if (data.status === 'done') {
+                    enrolled = true;
+                    var wait = setup.querySelector('[data-oksigeniaaty-enrolwait]');
+                    var done = setup.querySelector('[data-oksigeniaaty-enroldone]');
+                    if (wait) {
+                        wait.hidden = true;
+                    }
+                    if (done) {
+                        done.hidden = false;
+                    }
+                    if (submit) {
+                        submit.hidden = false;
+                        window.setTimeout(function() {
+                            submit.click();
+                        }, 1500);
+                    }
+                } else {
+                    // Expired: a new page brings a new code.
+                    window.location.reload();
+                }
+            }).catch(function() {
+                window.setTimeout(enroltick, 5000);
+            });
+        };
+        window.setTimeout(enroltick, 2000);
+        return;
+    }
+
     // Without a request to wait for (too many, not sent, expired), the form's button has nothing to confirm.
     var still = document.querySelector('[data-oksigeniaaty-nosubmit]');
     if (still) {
@@ -41,6 +88,7 @@
     var url = box.getAttribute('data-oksigeniaaty-check');
     var form = box.closest ? box.closest('form') : null;
     var done = false;
+    var failures = 0;
 
     // The form's own button («I have approved it») is only a way out if the screen does not move on by itself:
     // it does not look like the main thing to do, which is on the phone.
@@ -73,6 +121,7 @@
             if (done) {
                 return;
             }
+            failures = 0;
             if (data.status === 'pending') {
                 window.setTimeout(tick, 2000);
                 return;
@@ -84,6 +133,11 @@
                 window.location.reload();
             }
         }).catch(function() {
+            failures += 1;
+            if (failures >= 3) {
+                window.location.reload();
+                return;
+            }
             window.setTimeout(tick, 5000);
         });
     };

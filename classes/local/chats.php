@@ -36,14 +36,26 @@ class chats {
     public const KEYS = ['a', 'b', 'c'];
 
     /**
-     * Whether Marandu can ask this person on a chat of theirs.
+     * Whether this Marandu counts only the chats joined from the factor's own page (the declaration's «ownjoin»).
+     * An older one would count the chats joined from the account settings too, which a token of the app reaches with
+     * the password alone: with it, the factor does not ask on chats at all.
+     *
+     * @return bool
+     */
+    public static function supported(): bool {
+        return class_exists(self::API) && defined(self::API . '::OWNJOIN') && constant(self::API . '::OWNJOIN') === true
+            && method_exists(self::API, 'reaches') && method_exists(self::API, 'ask');
+    }
+
+    /**
+     * Whether Marandu can ask this person on a chat they joined from the factor's page.
      *
      * @param int $userid The person.
      * @return bool
      */
     public static function available(int $userid): bool {
         $api = self::API;
-        if (!class_exists($api) || !method_exists($api, 'reaches')) {
+        if (!self::supported()) {
             return false;
         }
         try {
@@ -63,11 +75,11 @@ class chats {
      */
     public static function ask(\stdClass $request, string $where): int {
         $api = self::API;
-        if (!class_exists($api) || !method_exists($api, 'ask')) {
+        if (!self::supported()) {
             return 0;
         }
         $params = array_merge(
-            [format_string(get_site()->fullname), $where],
+            [format_string(get_site()->fullname, true, ['escape' => false]), $where],
             array_map('strval', request::choices($request))
         );
         $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php', ['r' => $request->id]);
@@ -154,6 +166,34 @@ class chats {
             $status = request::APPROVED;
         }
         return get_string('approve:' . (in_array($status, $known, true) ? $status : 'none'), 'factor_oksigeniaaty');
+    }
+
+    /**
+     * The link to join a chat for approving, for the factor's setup page only, which waits for another factor.
+     *
+     * @param int $userid The person.
+     * @return array Each channel the site has, with its name and its link; empty without a Marandu that can.
+     */
+    public static function join_links(int $userid): array {
+        $api = self::API;
+        if (!self::supported() || !method_exists($api, 'invite') || !method_exists($api, 'join_url')) {
+            return [];
+        }
+        try {
+            $code = $api::invite('factor_oksigeniaaty', 0, $userid);
+            $links = [];
+            foreach (['telegram', 'whatsapp'] as $channel) {
+                $url = $api::join_url($channel, $code);
+                if ($url) {
+                    $links[] = ['channel' => $channel, 'name' => get_string('chan:' . $channel, 'factor_oksigeniaaty'),
+                        'url' => (string) $url];
+                }
+            }
+            return $links;
+        } catch (\Throwable $e) {
+            debugging('Approve from the phone, Marandu: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return [];
+        }
     }
 
     /**

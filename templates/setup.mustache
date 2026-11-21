@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+{{!
+    @template factor_oksigeniaaty/setup
+
+    The page to register a phone: the QR to read with the app, the link for this same phone, the chats to join, and
+    the wait until the app has done it.
+
+    Example context (json):
+    {
+        "enrolid": 3,
+        "qr": "data:image/png;base64,iVBORw0KGgo=",
+        "samephone": "moodlemobile://link=https://example.com/admin/tool/mfa/factor/oksigeniaaty/enrol.php?c=x",
+        "checkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/check.php?e=3&sesskey=x",
+        "minutes": 10,
+        "chats": [{"channel": "telegram", "name": "Telegram", "url": "https://t.me/example_bot?start=x"}]
+    }
+}}
+<div class="factor-oksigeniaaty-setup"{{#checkurl}} data-oksigeniaaty-enrolcheck="{{checkurl}}"{{/checkurl}}>
+    {{#qr}}
+    <p>{{#str}} setup:intro, factor_oksigeniaaty {{/str}}</p>
+    <ol>
+        <li>{{#str}} setup:step1, factor_oksigeniaaty {{/str}}</li>
+        <li>{{#str}} setup:step2, factor_oksigeniaaty {{/str}}</li>
+    </ol>
+    <p class="factor-oksigeniaaty-qr"><img src="{{qr}}" alt="{{#str}} setup:qralt, factor_oksigeniaaty {{/str}}" width="220" height="220"></p>
+    <p>{{#str}} setup:samephone, factor_oksigeniaaty {{/str}} <a href="{{samephone}}">{{#str}} setup:samephonelink, factor_oksigeniaaty {{/str}}</a></p>
+    <p class="factor-oksigeniaaty-status" data-oksigeniaaty-enrolwait>
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        {{#str}} setup:waiting, factor_oksigeniaaty, {{minutes}} {{/str}}
+    </p>
+    <p class="factor-oksigeniaaty-done" data-oksigeniaaty-enroldone role="status" hidden>{{#str}} setup:registered, factor_oksigeniaaty {{/str}}</p>
+    {{/qr}}
+    {{^qr}}
+    <p>{{#str}} setup:again, factor_oksigeniaaty {{/str}}</p>
+    {{/qr}}
+    {{#chats.0}}
+    <p>{{#str}} setup:chats, factor_oksigeniaaty {{/str}}</p>
+    <ul>
+        {{#chats}}
+        <li><a href="{{url}}" target="_blank" rel="noopener">{{name}}</a></li>
+        {{/chats}}
+    </ul>
+    {{/chats.0}}
+</div>

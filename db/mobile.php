@@ -41,6 +41,7 @@ $addons = [
         ],
         'lang' => [
             ['mobile:title', 'factor_oksigeniaaty'],
+            ['enrol:title', 'factor_oksigeniaaty'],
         ],
     ],
 ];

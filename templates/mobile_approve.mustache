@@ -38,24 +38,26 @@
 <%#pending%>
     <p><%who%></p>
     <p><strong><%where%></strong></p>
+    <ng-container *ngIf="oksigeniaatyEnrolled">
     <p class="ion-margin-top"><strong><%#str%>approve:pick, factor_oksigeniaaty<%/str%></strong></p>
     <ion-grid>
         <ion-row>
 <%#choices%>
             <ion-col>
-                <ion-button expand="block" size="large" core-site-plugins-call-ws
-                    name="factor_oksigeniaaty_answer" [params]="{requestid: <%requestid%>, choice: '<%value%>'}"
-                    [preSets]="{getFromCache: 0, saveToCache: 0}" refreshOnSuccess="true"><%value%></ion-button>
+                <ion-button expand="block" size="large" [disabled]="oksigeniaatyBusy"
+                    (click)="oksigeniaatyAnswer(<%requestid%>, '<%value%>')"><%value%></ion-button>
             </ion-col>
 <%/choices%>
         </ion-row>
     </ion-grid>
     <p class="ion-text-center"><small><%#str%>approve:pickhint, factor_oksigeniaaty<%/str%></small></p>
     <div class="ion-padding-top ion-margin-top">
-        <ion-button expand="block" fill="outline" color="danger" core-site-plugins-call-ws name="factor_oksigeniaaty_answer"
-            [params]="{requestid: <%requestid%>, choice: 'deny'}" [preSets]="{getFromCache: 0, saveToCache: 0}"
-            refreshOnSuccess="true"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>
+        <ion-button expand="block" fill="outline" color="danger" [disabled]="oksigeniaatyBusy"
+            (click)="oksigeniaatyAnswer(<%requestid%>, 'deny')"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>
     </div>
+    <p *ngIf="oksigeniaatyFailed" class="ion-text-center"><%#str%>approve:failed, factor_oksigeniaaty<%/str%></p>
+    </ng-container>
+    <p *ngIf="!oksigeniaatyEnrolled"><%#str%>approve:notenrolled, factor_oksigeniaaty<%/str%></p>
 <%/pending%>
 <%^pending%>
     <h2><%title%></h2>

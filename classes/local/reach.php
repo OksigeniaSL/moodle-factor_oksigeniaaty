@@ -37,6 +37,19 @@ class reach {
     }
 
     /**
+     * A link that opens this site's page in the app on this same phone, by the app's own scheme (the site's, or the
+     * Moodle app's): for the setup page seen on the phone that registers itself.
+     *
+     * @param \moodle_url $url The page.
+     * @return string
+     */
+    public static function app_link(\moodle_url $url): string {
+        $scheme = trim((string) get_config('tool_mobile', 'forcedurlscheme'));
+        $scheme = preg_match('/^[a-z][a-z0-9+.-]*$/i', $scheme) ? $scheme : 'moodlemobile';
+        return $scheme . '://link=' . $url->out(false);
+    }
+
+    /**
      * Whether this sign-in happens in the window of the Moodle app (or of an app made from it). There, the app's own
      * notice would open the numbers under the window, out of sight: only the chats, which are other apps, can ask.
      *
@@ -47,8 +60,8 @@ class reach {
     }
 
     /**
-     * Whether the person's phone gets the site's push notices for this one: the site sends them, the person has a
-     * phone with the app registered, and has not turned these notices off on the phone.
+     * Whether the person's phone gets the site's push notices for this one and can answer: the site sends them, the
+     * person registered a phone for this factor and has the app on a phone, and has not turned these notices off.
      *
      * @param int $userid The person.
      * @return bool
@@ -56,6 +69,10 @@ class reach {
     public static function app(int $userid): bool {
         global $CFG, $DB;
         if (empty($CFG->airnotifieraccesskey) || !$DB->get_field('message_processors', 'enabled', ['name' => 'airnotifier'])) {
+            return false;
+        }
+        // A phone registered for this factor, with its key: without it, nothing the app sends counts.
+        if (!devices::active($userid)) {
             return false;
         }
         if (!$DB->record_exists('user_devices', ['userid' => $userid])) {
@@ -106,7 +123,7 @@ class reach {
         $sent = false;
         if ($toapp && self::app((int) $request->userid)) {
             $url = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/approve.php', ['r' => $request->id]);
-            $site = format_string(get_site()->fullname);
+            $site = format_string(get_site()->fullname, true, ['escape' => false]);
             $message = new \core\message\message();
             $message->component = 'factor_oksigeniaaty';
             $message->name = 'approval';

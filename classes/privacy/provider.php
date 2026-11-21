@@ -38,6 +38,9 @@ class provider implements
     /** @var string The table. */
     private const TABLE = 'factor_oksigeniaaty_req';
 
+    /** @var string The codes to register a phone. */
+    private const ENROL = 'factor_oksigeniaaty_enrol';
+
     /**
      * What is stored.
      *
@@ -50,6 +53,13 @@ class provider implements
             $fields[$field] = 'privacy:metadata:' . self::TABLE . ':' . $field;
         }
         $collection->add_database_table(self::TABLE, $fields, 'privacy:metadata:' . self::TABLE);
+        $enrol = [];
+        foreach (['userid', 'status', 'timecreated'] as $field) {
+            $enrol[$field] = 'privacy:metadata:' . self::ENROL . ':' . $field;
+        }
+        $collection->add_database_table(self::ENROL, $enrol, 'privacy:metadata:' . self::ENROL);
+        // The registered phones are rows of tool_mfa, which declares and handles them.
+        $collection->add_subsystem_link('core_message', [], 'messageprovider:newphone');
         $collection->add_subsystem_link('core_message', [], 'messageprovider:approval');
         return $collection;
     }
@@ -62,11 +72,13 @@ class provider implements
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
-        $sql = 'SELECT ctx.id
-                  FROM {context} ctx
-                  JOIN {' . self::TABLE . '} r ON r.userid = ctx.instanceid AND ctx.contextlevel = :level
-                 WHERE r.userid = :userid';
-        $contextlist->add_from_sql($sql, ['level' => CONTEXT_USER, 'userid' => $userid]);
+        foreach ([self::TABLE, self::ENROL] as $table) {
+            $sql = 'SELECT ctx.id
+                      FROM {context} ctx
+                      JOIN {' . $table . '} r ON r.userid = ctx.instanceid AND ctx.contextlevel = :level
+                     WHERE r.userid = :userid';
+            $contextlist->add_from_sql($sql, ['level' => CONTEXT_USER, 'userid' => $userid]);
+        }
         return $contextlist;
     }
 
@@ -80,11 +92,13 @@ class provider implements
         if ($context->contextlevel != CONTEXT_USER) {
             return;
         }
-        $userlist->add_from_sql(
-            'userid',
-            'SELECT userid FROM {' . self::TABLE . '} WHERE userid = :userid',
-            ['userid' => $context->instanceid]
-        );
+        foreach ([self::TABLE, self::ENROL] as $table) {
+            $userlist->add_from_sql(
+                'userid',
+                'SELECT userid FROM {' . $table . '} WHERE userid = :userid',
+                ['userid' => $context->instanceid]
+            );
+        }
     }
 
     /**
@@ -128,6 +142,7 @@ class provider implements
         global $DB;
         if ($context->contextlevel == CONTEXT_USER) {
             $DB->delete_records(self::TABLE, ['userid' => $context->instanceid]);
+            $DB->delete_records(self::ENROL, ['userid' => $context->instanceid]);
         }
     }
 
@@ -142,6 +157,7 @@ class provider implements
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel == CONTEXT_USER && (int) $context->instanceid === $userid) {
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
+                $DB->delete_records(self::ENROL, ['userid' => $userid]);
             }
         }
     }
@@ -160,6 +176,7 @@ class provider implements
         foreach ($userlist->get_userids() as $userid) {
             if ((int) $userid === (int) $context->instanceid) {
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
+                $DB->delete_records(self::ENROL, ['userid' => $userid]);
             }
         }
     }
