@@ -27,29 +27,34 @@
         "expired": false,
         "againurl": "https://example.com/admin/tool/mfa/auth.php?factorname=oksigeniaaty&oksigeniaatyagain=1&sesskey=x",
         "minutes": 3,
+        "sent": "We have sent a notice to the app on your phone.",
         "problem": "",
         "early": ""
     }
 }}
-<div class="factor-oksigeniaaty-login"{{#waiting}} data-oksigeniaaty-check="{{checkurl}}"{{/waiting}}>
+<div class="factor-oksigeniaaty-login"{{#waiting}} data-oksigeniaaty-check="{{checkurl}}"{{/waiting}}{{^waiting}} data-oksigeniaaty-nosubmit{{/waiting}}>
     {{#waiting}}
+    <p>{{sent}}</p>
     <p class="factor-oksigeniaaty-pick">{{#str}} wait:pick, factor_oksigeniaaty {{/str}}</p>
-    <p class="factor-oksigeniaaty-code" aria-label="{{#str}} wait:codearia, factor_oksigeniaaty, {{code}} {{/str}}">{{code}}</p>
-    <p class="factor-oksigeniaaty-status" role="status">
+    <p class="factor-oksigeniaaty-code"><span class="visually-hidden sr-only">{{#str}} wait:codehidden, factor_oksigeniaaty {{/str}} </span>{{code}}</p>
+    <p class="factor-oksigeniaaty-status">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
         {{#str}} wait, factor_oksigeniaaty {{/str}}
     </p>
+    <div aria-live="polite">
     {{#early}}
-    <p class="factor-oksigeniaaty-early" role="alert">{{early}}</p>
+    <p class="factor-oksigeniaaty-early">{{early}}</p>
     {{/early}}
+    </div>
     <p class="factor-oksigeniaaty-valid">{{#str}} wait:valid, factor_oksigeniaaty, {{minutes}} {{/str}}</p>
     <p class="factor-oksigeniaaty-resend" data-oksigeniaaty-resend hidden>
+        {{#str}} wait:resendhint, factor_oksigeniaaty {{/str}}
         <a href="{{againurl}}">{{#str}} wait:resend, factor_oksigeniaaty {{/str}}</a>
     </p>
     {{/waiting}}
     {{#expired}}
-    <p role="status">{{#str}} wait:expired, factor_oksigeniaaty {{/str}}</p>
-    <p><a class="btn btn-secondary" href="{{againurl}}">{{#str}} wait:again, factor_oksigeniaaty {{/str}}</a></p>
+    <p role="status">{{#str}} wait:expired, factor_oksigeniaaty, {{minutes}} {{/str}}</p>
+    <p><a class="btn btn-primary" href="{{againurl}}">{{#str}} wait:again, factor_oksigeniaaty {{/str}}</a></p>
     {{/expired}}
     {{#problem}}
     <div class="alert alert-warning" role="alert">{{problem}}</div>

@@ -45,3 +45,13 @@
 .factor-oksigeniaaty-early {
     font-weight: 600;
 }
+
+.factor-oksigeniaaty-stopped {
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .factor-oksigeniaaty-status .spinner-border {
+        animation: none;
+    }
+}

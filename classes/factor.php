@@ -16,6 +16,7 @@
 
 namespace factor_oksigeniaaty;
 
+use factor_oksigeniaaty\local\chats;
 use factor_oksigeniaaty\local\reach;
 use factor_oksigeniaaty\local\request;
 use stdClass;
@@ -78,8 +79,9 @@ class factor extends object_factor_base {
         $sid = request::session_hash();
         $request = request::for_session($userid, $sid);
         if ($request && in_array($request->status, [request::DENIED, request::WRONG], true)) {
+            // The phone stopped it: the factor fails, and a page of its own says why and ends the session.
             $this->set_state(states::STATE_FAIL);
-            redirect(new \moodle_url('/admin/tool/mfa/auth.php'));
+            redirect(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/stopped.php'));
         }
 
         $problem = '';
@@ -100,6 +102,10 @@ class factor extends object_factor_base {
         }
 
         $waiting = $request && in_array($request->status, [request::PENDING, request::APPROVED], true) && $problem === '';
+        // Where it went, as far as can be known now: the app does not get it in its own window.
+        $toapp = !reach::in_app_window() && reach::app($userid);
+        $tochat = chats::available($userid);
+        $sent = $toapp && $tochat ? 'wait:sentboth' : ($toapp ? 'wait:sentapp' : 'wait:sentchat');
         // Sent before the phone answered: the form does not go on, and says why here, where the number is.
         $early = $waiting && $request->status === request::PENDING && $mform->isSubmitted();
         $checkurl = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php', [
@@ -115,6 +121,7 @@ class factor extends object_factor_base {
             'code' => $waiting ? (int) $request->code : null,
             'waiting' => $waiting,
             'checkurl' => $waiting ? $checkurl->out(false) : '',
+            'sent' => get_string($sent, 'factor_oksigeniaaty'),
             'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
             'againurl' => $againurl->out(false),
             'minutes' => (int) ceil(request::validity() / MINSECS),
@@ -123,12 +130,12 @@ class factor extends object_factor_base {
         ];
         // Raw, not a static element: the form would put it in a narrow column of a row.
         $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
-        if ($waiting) {
-            $script = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js', [
-                'v' => get_config('factor_oksigeniaaty', 'version'),
-            ]);
-            $PAGE->requires->js($script);
-        }
+        // Always: while waiting it asks and goes on by itself; otherwise it hides the form's button, which has nothing
+        // to confirm.
+        $script = new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/wait.js', [
+            'v' => get_config('factor_oksigeniaaty', 'version'),
+        ]);
+        $PAGE->requires->js($script);
         return $mform;
     }
 
@@ -226,6 +233,9 @@ class factor extends object_factor_base {
      * @return array
      */
     public function get_no_redirect_urls(): array {
-        return [new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php')];
+        return [
+            new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/check.php'),
+            new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/stopped.php'),
+        ];
     }
 }

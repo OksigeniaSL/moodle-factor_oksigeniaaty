@@ -23,6 +23,17 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {
+    // Without a request to wait for (too many, not sent, expired), the form's button has nothing to confirm.
+    var still = document.querySelector('[data-oksigeniaaty-nosubmit]');
+    if (still) {
+        var form0 = still.closest ? still.closest('form') : null;
+        var button0 = form0 ? form0.querySelector('[name="submitbutton"]') : null;
+        if (button0) {
+            button0.hidden = true;
+        }
+        return;
+    }
+
     var box = document.querySelector('[data-oksigeniaaty-check]');
     if (!box || !window.fetch) {
         return;
