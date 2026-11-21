@@ -55,9 +55,9 @@
         <ion-button expand="block" fill="outline" color="danger" [disabled]="oksigeniaatyBusy"
             (click)="oksigeniaatyAnswer(<%requestid%>, 'deny')"><%#str%>approve:deny, factor_oksigeniaaty<%/str%></ion-button>
     </div>
-    <p *ngIf="oksigeniaatyFailed" class="ion-text-center"><%#str%>approve:failed, factor_oksigeniaaty<%/str%></p>
+    <ng-container *ngIf="oksigeniaatyFailed"><p class="ion-text-center"><%#str%>approve:failed, factor_oksigeniaaty<%/str%></p></ng-container>
     </ng-container>
-    <p *ngIf="!oksigeniaatyEnrolled"><%#str%>approve:notenrolled, factor_oksigeniaaty<%/str%></p>
+    <ng-container *ngIf="!oksigeniaatyEnrolled"><p><%#str%>approve:notenrolled, factor_oksigeniaaty<%/str%></p></ng-container>
 <%/pending%>
 <%^pending%>
     <h2><%title%></h2>

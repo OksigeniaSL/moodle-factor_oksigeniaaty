@@ -158,8 +158,8 @@ class factor extends object_factor_base {
     public function login_form_validation(array $data): array {
         global $USER;
         $request = request::for_session((int) $USER->id, request::session_hash());
-        if ($request && $request->status === request::APPROVED
-                && (int) $request->timeanswered > time() - request::validity()) {
+        $fresh = $request && (int) $request->timeanswered > time() - request::validity();
+        if ($fresh && $request->status === request::APPROVED) {
             return [];
         }
         return ['oksigeniaatywait' => get_string('error:notapproved', 'factor_oksigeniaaty')];

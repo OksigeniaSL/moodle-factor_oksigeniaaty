@@ -26,10 +26,10 @@
 {{=<% %>=}}
 <div class="ion-padding">
     <h2><%#str%>enrol:title, factor_oksigeniaaty<%/str%></h2>
-    <p *ngIf="oksigeniaatyState === 'working'"><ion-spinner name="dots"></ion-spinner> <%#str%>enrol:working, factor_oksigeniaaty<%/str%></p>
+    <ng-container *ngIf="oksigeniaatyState === 'working'"><p><ion-spinner name="dots"></ion-spinner> <%#str%>enrol:working, factor_oksigeniaaty<%/str%></p></ng-container>
     <ng-container *ngIf="oksigeniaatyState === 'done'">
         <p><strong><%#str%>enrol:done, factor_oksigeniaaty<%/str%></strong></p>
         <p><%#str%>enrol:donehint, factor_oksigeniaaty<%/str%></p>
     </ng-container>
-    <p *ngIf="oksigeniaatyState === 'failed'"><%#str%>enrol:failed, factor_oksigeniaaty<%/str%></p>
+    <ng-container *ngIf="oksigeniaatyState === 'failed'"><p><%#str%>enrol:failed, factor_oksigeniaaty<%/str%></p></ng-container>
 </div>

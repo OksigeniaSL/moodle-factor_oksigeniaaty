@@ -23,6 +23,9 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// No sign-in here: the page only offers to open the code in the app, which uses it with its own session; a phone's
+// browser that reads the QR is usually not signed in, and nothing here needs it.
+// phpcs:ignore moodle.Files.RequireLogin.Missing
 require(__DIR__ . '/../../../../../config.php');
 
 use factor_oksigeniaaty\local\reach;
