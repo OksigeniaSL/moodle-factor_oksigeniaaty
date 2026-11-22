@@ -18,7 +18,10 @@
     @template factor_oksigeniaaty/help
 
     The page of an adult of the family asked for help: the code to tell, by voice, to the person who asked, and the way
-    to stop it if they did not ask.
+    to stop it if they did not ask. Made for a phone (it opens from the notice): who asks, the code big to say aloud and
+    how long it lasts, and then, together and never to be looked for, «Nobody from the school will ask you for this code»
+    and «They did not ask me». Safe and simple, without fear. Each other state, a calm
+    card with its sign.
 
     Example context (json):
     {
@@ -29,27 +32,34 @@
 }}
 <div class="factor-oksigeniaaty-help">
     {{#waiting}}
-    <p>{{#str}} familyhelp:intro, factor_oksigeniaaty, {{name}} {{/str}}</p>
-    <p>{{#str}} familyhelp:tell, factor_oksigeniaaty {{/str}}</p>
-    <p class="factor-oksigeniaaty-code factor-oksigeniaaty-helpcode"><span class="visually-hidden sr-only">{{#str}} familyhelp:codehidden, factor_oksigeniaaty {{/str}} </span>{{code}}</p>
-    <p>{{left}}</p>
-    <p><strong>{{#str}} familyhelp:warn, factor_oksigeniaaty, {{name}} {{/str}}</strong></p>
-    <form method="post" action="{{url}}">
-        <input type="hidden" name="sesskey" value="{{sesskey}}">
-        <input type="hidden" name="refuse" value="1">
-        <button type="submit" class="btn btn-outline-danger">{{#str}} familyhelp:refuse, factor_oksigeniaaty {{/str}}</button>
-    </form>
+    <div class="fo-ayuda-quien">
+        <span class="fo-ayuda-icono"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.4 2.5-6 5.5-6s5.5 2.6 5.5 6"/><path d="M14 20c.2-2.8 1.4-4.8 3-4.8 2 0 3.5 2.2 3.5 4.8"/></svg></span>
+        <p>{{#str}} familyhelp:intro, factor_oksigeniaaty, {{name}} {{/str}}</p>
+    </div>
+    <div class="fo-ayuda-codigo">
+        <p class="fo-ayuda-dile">{{#str}} familyhelp:tell, factor_oksigeniaaty {{/str}}</p>
+        <p class="factor-oksigeniaaty-code factor-oksigeniaaty-helpcode"><span class="visually-hidden sr-only">{{#str}} familyhelp:codehidden, factor_oksigeniaaty {{/str}} </span>{{code}}</p>
+        <p class="fo-ayuda-queda"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>{{left}}</p>
+    </div>
+    <div class="fo-ayuda-guarda">
+        <p><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/></svg><strong>{{#str}} familyhelp:warn, factor_oksigeniaaty, {{name}} {{/str}}</strong></p>
+        <form method="post" action="{{url}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <input type="hidden" name="refuse" value="1">
+            <button type="submit" class="btn btn-outline-danger btn-lg fo-ayuda-no"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg>{{#str}} familyhelp:refuse, factor_oksigeniaaty {{/str}}</button>
+        </form>
+    </div>
     {{/waiting}}
     {{#used}}
-    <p role="status">{{#str}} familyhelp:used, factor_oksigeniaaty, {{name}} {{/str}}</p>
+    <div class="fo-ayuda-estado fo-ayuda-hecha" role="status"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg><p>{{#str}} familyhelp:used, factor_oksigeniaaty, {{name}} {{/str}}</p></div>
     {{/used}}
     {{#refused}}
-    <p role="status">{{#str}} familyhelp:refusedalready, factor_oksigeniaaty {{/str}}</p>
+    <div class="fo-ayuda-estado fo-ayuda-parada" role="status"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg><p>{{#str}} familyhelp:refusedalready, factor_oksigeniaaty {{/str}}</p></div>
     {{/refused}}
     {{#expired}}
-    <p role="status">{{#str}} familyhelp:expired, factor_oksigeniaaty {{/str}}</p>
+    <div class="fo-ayuda-estado" role="status"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><p>{{#str}} familyhelp:expired, factor_oksigeniaaty {{/str}}</p></div>
     {{/expired}}
     {{#none}}
-    <p role="status">{{#str}} familyhelp:none, factor_oksigeniaaty {{/str}}</p>
+    <div class="fo-ayuda-estado" role="status"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.4 2.5-6 5.5-6s5.5 2.6 5.5 6"/><path d="M14 20c.2-2.8 1.4-4.8 3-4.8 2 0 3.5 2.2 3.5 4.8"/></svg><p>{{#str}} familyhelp:none, factor_oksigeniaaty {{/str}}</p></div>
     {{/none}}
 </div>

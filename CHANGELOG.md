@@ -9,6 +9,8 @@
   minutes, and only in the browser that asked. «They did not ask me» stops it, ends that browser's session and blocks
   asking again for a day; no more than three a day. The person is told when help is asked for, used or stopped.
   «Your accesses» names who can help. A setting turns it off; without Oksigenia Family it does not show.
+- Its design: the helper's page fits a phone without scrolling (who asks, the code large with the time left, and «They
+  did not ask me» with the warning, the only red edge on the page), and each other state in a calm card of its own.
 
 ## 0.2.9-dev (22 November 2026)
 

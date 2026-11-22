@@ -81,7 +81,7 @@
     <details class="factor-oksigeniaaty-recovery mt-3"{{#codeerror}} open{{/codeerror}}{{^reachable}} open{{/reachable}}{{#helpwaiting}} open{{/helpwaiting}}>
         <summary><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>{{codesummary}}</summary>
         {{#helpwaiting}}
-        <p class="mt-2 mb-0" role="status">{{helpwaiting}}</p>
+        <p class="mt-2 mb-0 fo-ayuda-avisados" role="status"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.4 2.5-6 5.5-6s5.5 2.6 5.5 6"/><path d="M14 20c.2-2.8 1.4-4.8 3-4.8 2 0 3.5 2.2 3.5 4.8"/></svg><span>{{helpwaiting}}</span></p>
         {{/helpwaiting}}
         <label for="factor-oksigeniaaty-recoverycode" class="mt-2">{{codelabel}}</label>
         <input type="text" id="factor-oksigeniaaty-recoverycode" name="oksigeniaatycode" class="form-control factor-oksigeniaaty-recoverycode{{#codeerror}} is-invalid{{/codeerror}}"
@@ -95,6 +95,6 @@
     </details>
     {{/codes}}
     {{#helpurl}}
-    <p class="factor-oksigeniaaty-familyhelp mt-3"><a href="{{helpurl}}">{{#str}} familyhelp:ask, factor_oksigeniaaty {{/str}}</a></p>
+    <p class="factor-oksigeniaaty-familyhelp mt-3"><a href="{{helpurl}}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.4 2.5-6 5.5-6s5.5 2.6 5.5 6"/><path d="M14 20c.2-2.8 1.4-4.8 3-4.8 2 0 3.5 2.2 3.5 4.8"/></svg>{{#str}} familyhelp:ask, factor_oksigeniaaty {{/str}}</a></p>
     {{/helpurl}}
 </div>
