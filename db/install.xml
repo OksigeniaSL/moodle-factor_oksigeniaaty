@@ -46,5 +46,21 @@
         <INDEX NAME="codehash" UNIQUE="false" FIELDS="codehash"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="factor_oksigeniaaty_codes" COMMENT="Each recovery code of a person, for the day the phone is lost; only its hash">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Whose code it is"/>
+        <FIELD NAME="codehash" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="HMAC-SHA256 of the person and the code; the code itself is only on the person's paper"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeused" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When it passed the factor, or 0 while unused"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="codehash" UNIQUE="false" FIELDS="codehash"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

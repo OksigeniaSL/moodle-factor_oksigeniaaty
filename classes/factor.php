@@ -19,6 +19,7 @@ namespace factor_oksigeniaaty;
 use factor_oksigeniaaty\local\chats;
 use factor_oksigeniaaty\local\devices;
 use factor_oksigeniaaty\local\reach;
+use factor_oksigeniaaty\local\recovery;
 use factor_oksigeniaaty\local\request;
 use stdClass;
 use tool_mfa\local\factor\object_factor_base;
@@ -47,17 +48,30 @@ class factor extends object_factor_base {
      * setup form with a new instance of the factor for each step, so it cannot live in the instance. */
     private static $enrolcodes = [];
 
+    /** @var bool[] Whether each person passed with a recovery code in this request of the browser. */
+    private static $recovered = [];
+
     /**
      * Whether the person can get a request somewhere, once per page.
      *
      * @param int $userid The person.
      * @return bool
      */
-    private static function ready(int $userid): bool {
+    private static function reachable(int $userid): bool {
         if (!array_key_exists($userid, self::$reachable)) {
             self::$reachable[$userid] = $userid > 0 && reach::any($userid, !reach::in_app_window());
         }
         return self::$reachable[$userid];
+    }
+
+    /**
+     * Whether the factor can be passed now: a request can reach the person, or they have recovery codes left.
+     *
+     * @param int $userid The person.
+     * @return bool
+     */
+    private static function ready(int $userid): bool {
+        return self::reachable($userid) || recovery::remaining($userid) > 0;
     }
 
     /**
@@ -92,11 +106,26 @@ class factor extends object_factor_base {
             redirect(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/stopped.php'));
         }
 
+        // A recovery code, typed below the number: spent here, before the form is validated, so that the screen can
+        // say what went wrong; a wrong one counts a failure there, as any other.
+        $codeerror = '';
+        if ($mform->isSubmitted() && optional_param('oksigeniaatyusecode', 0, PARAM_BOOL) && confirm_sesskey()) {
+            $typed = optional_param('oksigeniaatycode', '', PARAM_RAW_TRIMMED);
+            self::$recovered[$userid] = $typed !== '' && recovery::spend($userid, $typed);
+            if (!self::$recovered[$userid]) {
+                $codeerror = get_string($typed === '' ? 'recovery:empty' : 'recovery:wrong', 'factor_oksigeniaaty');
+            }
+        }
+        $reachable = self::reachable($userid);
+        $codes = recovery::remaining($userid);
+
         $problem = '';
         $again = optional_param('oksigeniaatyagain', 0, PARAM_BOOL) && confirm_sesskey();
         // Another one when there is none, or when the person asks for it: the one waiting expired, or never arrived.
         $renew = $again && in_array($request->status ?? '', [request::EXPIRED, request::PENDING], true);
-        if (!$request || $request->status === request::USED || $renew) {
+        // None when nothing can reach the person (only their codes are left), or when a code has just passed.
+        $quiet = !$reachable || !empty(self::$recovered[$userid]);
+        if (!$quiet && (!$request || $request->status === request::USED || $renew)) {
             $held = request::held_back($userid);
             if ($held === '') {
                 $device = request::describe((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
@@ -132,7 +161,7 @@ class factor extends object_factor_base {
             'waiting' => $waiting,
             'checkurl' => $waiting ? $checkurl->out(false) : '',
             'sent' => get_string($sent, 'factor_oksigeniaaty'),
-            'expired' => !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
+            'expired' => $reachable && !$waiting && $problem === '' && $request && $request->status === request::EXPIRED,
             'againurl' => $againurl->out(false),
             'minutes' => (int) ceil(request::validity() / MINSECS),
             'typed' => $waiting && request::typed($userid),
@@ -147,6 +176,9 @@ class factor extends object_factor_base {
             ]),
             'problem' => $problem,
             'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
+            'reachable' => $reachable,
+            'codes' => $codes > 0 || $codeerror !== '',
+            'codeerror' => $codeerror,
         ];
         // Raw, not a static element: the form would put it in a narrow column of a row.
         $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
@@ -167,6 +199,12 @@ class factor extends object_factor_base {
      */
     public function login_form_validation(array $data): array {
         global $USER;
+        if (!empty(self::$recovered[(int) $USER->id])) {
+            return [];
+        }
+        if (optional_param('oksigeniaatyusecode', 0, PARAM_BOOL)) {
+            return ['oksigeniaatycode' => get_string('recovery:wrong', 'factor_oksigeniaaty')];
+        }
         $request = request::for_session((int) $USER->id, request::session_hash());
         $fresh = $request && (int) $request->timeanswered > time() - request::validity();
         if ($fresh && $request->status === request::APPROVED) {
@@ -238,6 +276,17 @@ class factor extends object_factor_base {
             get_string('accesses:title', 'factor_oksigeniaaty')
         );
         return \html_writer::tag('p', s($text)) . \html_writer::tag('p', $link);
+    }
+
+    /**
+     * The factor reset for a person, by an administrator: their phones go, as tool_mfa does, and their recovery codes
+     * too.
+     *
+     * @param stdClass $user The person.
+     */
+    public function delete_factor_for_user(stdClass $user): void {
+        parent::delete_factor_for_user($user);
+        recovery::delete((int) $user->id);
     }
 
     /**

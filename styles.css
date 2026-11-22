@@ -55,3 +55,37 @@
         animation: none;
     }
 }
+
+/* The way in with a recovery code, below the number: left-aligned, as a form is. */
+.factor-oksigeniaaty-recovery {
+    text-align: start;
+    margin-top: 1rem;
+}
+
+.factor-oksigeniaaty-recovery summary {
+    cursor: pointer;
+}
+
+/* The recovery codes, to print: large, in two columns, with figures of the same width. */
+.factor-oksigeniaaty-codes-list {
+    columns: 2;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.factor-oksigeniaaty-codes-list code {
+    color: inherit;
+    font-size: inherit;
+}
+
+@media print {
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes nav.navbar,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes #page-header,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes #page-footer,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes .drawer,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes .drawer-toggles,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes .btn-footer-popover,
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes .factor-oksigeniaaty-codes-actions {
+        display: none !important;
+    }
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.9-dev (22 November 2026)
+
+- Recovery codes, for the day the phone is lost or out of battery: ten codes of eight digits, made from «Your accesses»
+  and shown once on a page to print. Each one passes the factor once: the sign-in screen offers «No phone? Use a
+  recovery code» below the number, open from the start when no phone or chat can be reached. A wrong code counts a
+  failure, as tool_mfa does with any other. Only an HMAC of each code is kept; new codes replace the old ones, and
+  making them or using one is told to the person (a new notice, `recovery`, by email too).
+- With recovery codes left, the factor can be passed even when nothing can reach the person; resetting the factor for
+  someone takes their codes too.
+
 ## 0.2.8-dev (22 November 2026)
 
 - «Your accesses» (`accesses.php`): the phones and chats that approve the person's sign-ins, each with a button to

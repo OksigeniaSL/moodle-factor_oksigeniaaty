@@ -37,7 +37,9 @@
         "removephoneurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/removephone.php",
         "unlinkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php",
         "sesskey": "x",
-        "passwordurl": "https://example.com/login/change_password.php"
+        "passwordurl": "https://example.com/login/change_password.php",
+        "recovery": {"made": "22/11/26", "lefttext": "9 of 10 left, made on 22/11/26.", "lastused": "22/11/26, 09:40",
+            "createurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/codes.php"}
     }
 }}
 <div class="factor-oksigeniaaty-accesses">
@@ -90,6 +92,33 @@
         </ul>
     </section>
     {{/chats.0}}
+    {{#recovery}}
+    <section class="factor-oksigeniaaty-accesses-recovery mb-4" aria-labelledby="factor-oksigeniaaty-recovery">
+        <h3 id="factor-oksigeniaaty-recovery">{{#str}} recovery:title, factor_oksigeniaaty {{/str}}</h3>
+        <p>{{#str}} recovery:intro, factor_oksigeniaaty {{/str}}</p>
+        {{#made}}
+        <p>{{lefttext}}
+        {{#lastused}}<br><small>{{#str}} recovery:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}</small>{{/lastused}}</p>
+        <form method="post" action="{{createurl}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <button type="submit" class="btn btn-secondary"
+                data-modal="confirmation"
+                data-modal-title-str='["recovery:createnew", "factor_oksigeniaaty"]'
+                data-modal-content-str='["recovery:createnewconfirm", "factor_oksigeniaaty"]'
+                data-modal-yes-button-str='["recovery:createnew", "factor_oksigeniaaty"]'>
+                {{#str}} recovery:createnew, factor_oksigeniaaty {{/str}}
+            </button>
+        </form>
+        {{/made}}
+        {{^made}}
+        <p>{{#str}} recovery:none, factor_oksigeniaaty {{/str}}</p>
+        <form method="post" action="{{createurl}}">
+            <input type="hidden" name="sesskey" value="{{sesskey}}">
+            <button type="submit" class="btn btn-secondary">{{#str}} recovery:create, factor_oksigeniaaty {{/str}}</button>
+        </form>
+        {{/made}}
+    </section>
+    {{/recovery}}
     <section class="factor-oksigeniaaty-accesses-history" aria-labelledby="factor-oksigeniaaty-history">
         <h3 id="factor-oksigeniaaty-history">{{#str}} accesses:history, factor_oksigeniaaty {{/str}}</h3>
         {{#history.0}}

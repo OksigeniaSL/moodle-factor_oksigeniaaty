@@ -41,6 +41,9 @@ class provider implements
     /** @var string The codes to register a phone. */
     private const ENROL = 'factor_oksigeniaaty_enrol';
 
+    /** @var string The recovery codes. */
+    private const CODES = 'factor_oksigeniaaty_codes';
+
     /**
      * What is stored.
      *
@@ -58,9 +61,15 @@ class provider implements
             $enrol[$field] = 'privacy:metadata:' . self::ENROL . ':' . $field;
         }
         $collection->add_database_table(self::ENROL, $enrol, 'privacy:metadata:' . self::ENROL);
+        $codes = [];
+        foreach (['userid', 'timecreated', 'timeused'] as $field) {
+            $codes[$field] = 'privacy:metadata:' . self::CODES . ':' . $field;
+        }
+        $collection->add_database_table(self::CODES, $codes, 'privacy:metadata:' . self::CODES);
         // The registered phones are rows of tool_mfa, which declares and handles them.
         $collection->add_subsystem_link('core_message', [], 'messageprovider:newphone');
         $collection->add_subsystem_link('core_message', [], 'messageprovider:approval');
+        $collection->add_subsystem_link('core_message', [], 'messageprovider:recovery');
         return $collection;
     }
 
@@ -72,7 +81,7 @@ class provider implements
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
-        foreach ([self::TABLE, self::ENROL] as $table) {
+        foreach ([self::TABLE, self::ENROL, self::CODES] as $table) {
             $sql = 'SELECT ctx.id
                       FROM {context} ctx
                       JOIN {' . $table . '} r ON r.userid = ctx.instanceid AND ctx.contextlevel = :level
@@ -92,7 +101,7 @@ class provider implements
         if ($context->contextlevel != CONTEXT_USER) {
             return;
         }
-        foreach ([self::TABLE, self::ENROL] as $table) {
+        foreach ([self::TABLE, self::ENROL, self::CODES] as $table) {
             $userlist->add_from_sql(
                 'userid',
                 'SELECT userid FROM {' . $table . '} WHERE userid = :userid',
@@ -124,10 +133,18 @@ class provider implements
                     'timeanswered' => $request->timeanswered ? transform::datetime($request->timeanswered) : '',
                 ];
             }
-            if ($requests) {
+            // The recovery codes, only when they were made and used: the codes themselves are not kept.
+            $codes = [];
+            foreach ($DB->get_records(self::CODES, ['userid' => $userid], 'id') as $code) {
+                $codes[] = (object) [
+                    'timecreated' => transform::datetime($code->timecreated),
+                    'timeused' => $code->timeused ? transform::datetime($code->timeused) : '',
+                ];
+            }
+            if ($requests || $codes) {
                 writer::with_context($context)->export_data(
                     [get_string('pluginname', 'factor_oksigeniaaty')],
-                    (object) ['requests' => $requests]
+                    (object) ['requests' => $requests, 'recoverycodes' => $codes]
                 );
             }
         }
@@ -143,6 +160,7 @@ class provider implements
         if ($context->contextlevel == CONTEXT_USER) {
             $DB->delete_records(self::TABLE, ['userid' => $context->instanceid]);
             $DB->delete_records(self::ENROL, ['userid' => $context->instanceid]);
+            $DB->delete_records(self::CODES, ['userid' => $context->instanceid]);
         }
     }
 
@@ -158,6 +176,7 @@ class provider implements
             if ($context->contextlevel == CONTEXT_USER && (int) $context->instanceid === $userid) {
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
                 $DB->delete_records(self::ENROL, ['userid' => $userid]);
+                $DB->delete_records(self::CODES, ['userid' => $userid]);
             }
         }
     }
@@ -177,6 +196,7 @@ class provider implements
             if ((int) $userid === (int) $context->instanceid) {
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
                 $DB->delete_records(self::ENROL, ['userid' => $userid]);
+                $DB->delete_records(self::CODES, ['userid' => $userid]);
             }
         }
     }

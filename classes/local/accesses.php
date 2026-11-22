@@ -91,6 +91,7 @@ class accesses {
             'unlinkurl' => (new \moodle_url($base . 'unlinkchat.php'))->out(false),
             'sesskey' => sesskey(),
             'passwordurl' => '',
+            'recovery' => self::recovery($userid),
         ];
         $auth = get_auth_plugin($user->auth);
         if ($auth->can_change_password()) {
@@ -98,6 +99,30 @@ class accesses {
             $context['passwordurl'] = ($url ?: new \moodle_url('/login/change_password.php'))->out(false);
         }
         return $context;
+    }
+
+    /**
+     * The person's recovery codes: how many are left, when they were made and when the last one was used.
+     *
+     * @param int $userid The person.
+     * @return array
+     */
+    private static function recovery(int $userid): array {
+        global $DB;
+        $made = recovery::made($userid);
+        $used = (int) $DB->get_field(recovery::TABLE, 'MAX(timeused)', ['userid' => $userid]);
+        $date = get_string('strftimedatefullshort', 'langconfig');
+        $left = (object) [
+            'left' => recovery::remaining($userid),
+            'total' => recovery::COUNT,
+            'made' => $made ? userdate($made, $date) : '',
+        ];
+        return [
+            'made' => $left->made,
+            'lefttext' => $made ? get_string('recovery:left', 'factor_oksigeniaaty', $left) : '',
+            'lastused' => $used ? userdate($used, get_string('strftimedatetimeshort', 'langconfig')) : '',
+            'createurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/codes.php'))->out(false),
+        ];
     }
 
     /**

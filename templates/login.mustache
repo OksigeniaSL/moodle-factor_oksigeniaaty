@@ -33,7 +33,10 @@
         "says": "{}",
         "sent": "We have sent a notice to the app on your phone.",
         "problem": "",
-        "early": ""
+        "early": "",
+        "reachable": true,
+        "codes": true,
+        "codeerror": ""
     }
 }}
 <div class="factor-oksigeniaaty-login"{{#waiting}} data-oksigeniaaty-check="{{checkurl}}"{{/waiting}}{{^waiting}} data-oksigeniaaty-nosubmit{{/waiting}}>
@@ -65,4 +68,21 @@
     {{#problem}}
     <div class="alert alert-warning" role="alert">{{problem}}</div>
     {{/problem}}
+    {{^reachable}}
+    <p>{{#str}} recovery:only, factor_oksigeniaaty {{/str}}</p>
+    {{/reachable}}
+    {{#codes}}
+    <details class="factor-oksigeniaaty-recovery mt-3"{{#codeerror}} open{{/codeerror}}{{^reachable}} open{{/reachable}}>
+        <summary>{{#str}} recovery:summary, factor_oksigeniaaty {{/str}}</summary>
+        <label for="factor-oksigeniaaty-recoverycode" class="mt-2">{{#str}} recovery:label, factor_oksigeniaaty {{/str}}</label>
+        <input type="text" id="factor-oksigeniaaty-recoverycode" name="oksigeniaatycode" class="form-control{{#codeerror}} is-invalid{{/codeerror}}"
+            inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="20"
+            {{#codeerror}}aria-describedby="factor-oksigeniaaty-recoveryerror" aria-invalid="true"{{/codeerror}}>
+        {{#codeerror}}
+        <div id="factor-oksigeniaaty-recoveryerror" class="invalid-feedback d-block" role="alert">{{codeerror}}</div>
+        {{/codeerror}}
+        <button type="submit" class="btn btn-primary mt-2" name="oksigeniaatyusecode" value="1">{{#str}} recovery:enter, factor_oksigeniaaty {{/str}}</button>
+        <p class="mt-2"><small>{{#str}} recovery:once, factor_oksigeniaaty {{/str}}</small></p>
+    </details>
+    {{/codes}}
 </div>
