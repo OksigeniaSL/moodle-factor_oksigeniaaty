@@ -86,6 +86,569 @@
     #page-admin-tool-mfa-factor-oksigeniaaty-codes .drawer-toggles,
     #page-admin-tool-mfa-factor-oksigeniaaty-codes .btn-footer-popover,
     #page-admin-tool-mfa-factor-oksigeniaaty-codes .factor-oksigeniaaty-codes-actions {
-        display: none !important;
+        display: none;
     }
+
+    /* The theme's page is as tall as the screen, below the space of the bar: on paper, a blank second page. */
+    body#page-admin-tool-mfa-factor-oksigeniaaty-codes {
+        height: auto;
+    }
+
+    #page-admin-tool-mfa-factor-oksigeniaaty-codes #page-wrapper {
+        height: auto;
+        min-height: 0;
+    }
+}
+
+/* «Your accesses»: «this is under control». The state on top, calm; what approves on one
+   side and the sign-ins by day on the other (one under the other on a phone). A stopped sign-in shows by its amber edge
+   and its words, not by red. Only Bootstrap's variables, so the theme's light and dark both work. */
+
+.factor-oksigeniaaty-accesses {
+    --fo-r: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.factor-oksigeniaaty-accesses svg {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.factor-oksigeniaaty-accesses p {
+    margin: 0;
+}
+
+.fo-estado {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--fo-r);
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.fo-estado-icono {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    flex: none;
+    background: var(--bs-body-bg, #fff);
+    color: var(--bs-success-text-emphasis, #0a3622);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.fo-estado-icono svg {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.fo-estado-texto {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.fo-estado-quien {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.fo-estado-linea {
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.fo-estado-aviso {
+    background: var(--bs-warning-bg-subtle, #fff3cd);
+    border-color: var(--bs-warning-border-subtle, #ffe69c);
+}
+
+.fo-estado-aviso .fo-estado-icono {
+    color: var(--bs-warning-text-emphasis, #664d03);
+    border-color: var(--bs-warning-border-subtle, #ffe69c);
+}
+
+.fo-estado-aviso .fo-estado-parada {
+    color: var(--bs-warning-text-emphasis, #664d03);
+    font-weight: 600;
+}
+
+.fo-estado-boton {
+    flex: none;
+}
+
+.fo-columnas {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.fo-columna {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.fo-caja {
+    padding: 1rem 1.25rem 1.1rem;
+    border-radius: var(--fo-r);
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    min-width: 0;
+}
+
+.fo-caja-titulo {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0 0 .5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.fo-caja-titulo svg {
+    color: var(--bs-primary, #0f6cbf);
+}
+
+.fo-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* The button goes under its row when the column is too narrow for both: the text never gets squeezed. */
+.fo-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    padding: .7rem 0;
+}
+
+.fo-lista .fo-fila + .fo-fila {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.fo-fila-texto {
+    flex: 1 1 12rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+}
+
+.fo-fila-texto small,
+.fo-entrada-texto small {
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.fo-fila-accion {
+    flex: none;
+    margin: 0;
+}
+
+.fo-anadir {
+    margin-top: .35rem;
+}
+
+.fo-vacio {
+    color: var(--bs-secondary-color, #6c757d);
+    padding: .4rem 0 .6rem;
+}
+
+/* the recovery codes: how many are left, as ten little marks that go out as they are spent */
+.fo-codigos {
+    display: flex;
+    gap: 4px;
+    margin: .25rem 0 .2rem;
+}
+
+.fo-codigos i {
+    width: 14px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bs-primary, #0f6cbf);
+}
+
+.fo-codigos i.fo-usado {
+    background: var(--bs-border-color, #dee2e6);
+}
+
+/* the sign-ins: by day, the hour first, a mark for what happened */
+.factor-oksigeniaaty-accesses p.fo-intro {
+    color: var(--bs-secondary-color, #6c757d);
+    margin-bottom: .5rem;
+}
+
+.fo-dia {
+    margin: .9rem 0 .35rem;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.fo-linea {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.fo-entrada {
+    display: grid;
+    grid-template-columns: 3.4rem 1.75rem minmax(0, 1fr);
+    align-items: start;
+    gap: .5rem;
+    padding: .55rem .6rem;
+    border-radius: 10px;
+    border-left: 4px solid transparent;
+}
+
+.fo-entrada + .fo-entrada {
+    margin-top: .15rem;
+}
+
+.fo-hora {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    padding-top: .1rem;
+}
+
+.fo-marca {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    color: var(--bs-success-text-emphasis, #0a3622);
+    background: var(--bs-success-bg-subtle, #d1e7dd);
+}
+
+.fo-marca svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.fo-entrada-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.fo-entrada-texto strong {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.fo-parada {
+    background: var(--bs-warning-bg-subtle, #fff3cd);
+    border-left-color: var(--bs-warning, #ffc107);
+}
+
+.fo-parada .fo-marca {
+    color: var(--bs-warning-text-emphasis, #664d03);
+    background: transparent;
+}
+
+.fo-parada .fo-entrada-texto small {
+    color: var(--bs-warning-text-emphasis, #664d03);
+    font-weight: 600;
+}
+
+.fo-esperando .fo-marca {
+    color: var(--bs-primary, #0f6cbf);
+    background: var(--bs-primary-bg-subtle, #cfe2ff);
+}
+
+.fo-sin .fo-marca {
+    color: var(--bs-secondary-color, #6c757d);
+    background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+@media (max-width: 991.98px) {
+    .fo-columnas {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .fo-estado {
+        flex-wrap: wrap;
+        padding: .9rem 1rem;
+    }
+
+    .fo-estado-boton {
+        width: 100%;
+    }
+
+    .fo-caja {
+        padding: .9rem 1rem 1rem;
+    }
+
+    .fo-fila {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .fo-fila-accion {
+        width: 100%;
+    }
+
+    .fo-fila-accion .btn {
+        width: 100%;
+    }
+}
+
+/* What each thing is, at the start of its row; the codes as a ticket of ten, the spent ones punched; the
+   sign-ins strung on a thread, like a ledger */
+
+.fo-cosa {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 12px;
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    color: var(--bs-primary, #0f6cbf);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.fo-canal-telegram {
+    background: #229ed9;
+    color: #fff;
+    border-color: #229ed9;
+}
+
+.fo-canal-whatsapp {
+    background: #1f9c4d;
+    color: #fff;
+    border-color: #1f9c4d;
+}
+
+.fo-bono {
+    position: relative;
+    display: inline-flex;
+    gap: 6px;
+    align-self: flex-start;
+    margin: .35rem 0 .3rem;
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: var(--bs-primary-bg-subtle, #cfe2ff);
+    border: 1px dashed var(--bs-primary-border-subtle, #9ec5fe);
+}
+
+.fo-bono i {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--bs-primary, #0f6cbf);
+}
+
+.fo-bono i.fo-usado {
+    background: var(--bs-body-bg, #fff);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .25);
+}
+
+.fo-linea {
+    position: relative;
+}
+
+.fo-linea::before {
+    content: '';
+    position: absolute;
+    left: calc(.6rem + 3.4rem + .5rem + .8rem - 1px);
+    top: 1rem;
+    bottom: 1rem;
+    width: 2px;
+    background: var(--bs-border-color, #dee2e6);
+}
+
+.fo-marca {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 3px var(--bs-body-bg, #fff);
+}
+
+.fo-parada .fo-marca {
+    background: var(--bs-warning-bg-subtle, #fff3cd);
+    box-shadow: 0 0 0 3px var(--bs-warning-bg-subtle, #fff3cd);
+}
+
+/* The sheet of recovery codes: a card on the screen, one A4 page on paper. The ten codes big,
+   in two columns, each with a box to tick once used; who they are for, where and when, in words and with the year. */
+
+.fo-codigos-aviso {
+    margin-bottom: 1rem;
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.fo-hoja {
+    padding: 1.75rem 2rem;
+    border-radius: 16px;
+    background: #fff;
+    color: #1d2125;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .35);
+}
+
+.fo-hoja-cab {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #1d2125;
+}
+
+.fo-hoja-llave {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 2px solid #1d2125;
+    flex: none;
+}
+
+.fo-hoja-llave svg {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.fo-hoja-titulo {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.fo-hoja-para {
+    margin: .15rem 0 0;
+    color: #495057;
+}
+
+.factor-oksigeniaaty-codes-list.fo-hoja-codigos {
+    columns: 2;
+    column-gap: 2.5rem;
+    margin: 1.25rem 0;
+    padding-left: 1.6rem;
+    font-size: 1.6rem;
+}
+
+.fo-hoja-codigos li {
+    break-inside: avoid;
+    padding: .45rem 0;
+    border-bottom: 1px dashed #ced4da;
+}
+
+.fo-hoja-codigos li::marker {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.fo-hoja-codigos code {
+    color: #1d2125;
+    font-family: "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.fo-hoja-casilla {
+    display: inline-block;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0 .7rem 0 .2rem;
+    vertical-align: -.05rem;
+    border: 2px solid #495057;
+    border-radius: 3px;
+}
+
+.fo-hoja-pie {
+    margin: 0;
+    padding-top: .9rem;
+    border-top: 2px solid #1d2125;
+    font-weight: 600;
+}
+
+.factor-oksigeniaaty-codes-actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .fo-hoja {
+        padding: 1.25rem 1rem;
+    }
+
+    .factor-oksigeniaaty-codes-list.fo-hoja-codigos {
+        columns: 1;
+        font-size: 1.45rem;
+    }
+}
+
+@media print {
+    .fo-codigos-aviso {
+        display: none;
+    }
+
+    .fo-hoja {
+        box-shadow: none;
+        border: 1.5px dashed #495057;
+        border-radius: 0;
+        padding: 12mm 14mm;
+    }
+
+    .factor-oksigeniaaty-codes-list.fo-hoja-codigos {
+        columns: 2;
+        font-size: 26px;
+    }
+}
+
+/* The way in with a recovery code, under the number: a quiet line with its key, and when open, a big field that already
+   shows the shape of a code. */
+
+.factor-oksigeniaaty-recovery summary {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    color: var(--bs-link-color, #0f6cbf);
+    font-weight: 600;
+    list-style: none;
+}
+
+.factor-oksigeniaaty-recovery summary::-webkit-details-marker {
+    display: none;
+}
+
+.factor-oksigeniaaty-recovery summary svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    flex: none;
+}
+
+.factor-oksigeniaaty-recovery[open] {
+    padding: .9rem 1rem 1rem;
+    border-radius: 12px;
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.factor-oksigeniaaty-recoverycode {
+    max-width: 16rem;
+    font-family: "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-size: 1.5rem;
+    letter-spacing: .12em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }

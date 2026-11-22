@@ -279,6 +279,17 @@ class factor extends object_factor_base {
     }
 
     /**
+     * The «last approved» of a phone is set by the phone itself, when its signed answer is checked: passing the factor
+     * with a recovery code or a chat does not make every phone of the person look as if it had approved.
+     *
+     * @param int|null $factorid The phone, or every phone of the person.
+     * @return bool
+     */
+    public function update_lastverified(?int $factorid = null): bool {
+        return true;
+    }
+
+    /**
      * The factor reset for a person, by an administrator: their phones go, as tool_mfa does, and their recovery codes
      * too.
      *

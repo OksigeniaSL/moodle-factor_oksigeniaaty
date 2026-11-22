@@ -22,20 +22,26 @@
     Example context (json):
     {
         "codes": [{"code": "4821 7730"}, {"code": "0193 5528"}],
-        "for": "Ana Pérez, at Example School. Made on 22/11/26.",
+        "for": "Ana Pérez, en el Colegio de Ejemplo. Creados el 22 de noviembre de 2026.",
         "backurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/accesses.php"
     }
 }}
 <div class="factor-oksigeniaaty-codes">
-    <p>{{#str}} recovery:pageintro, factor_oksigeniaaty {{/str}}</p>
-    <div class="factor-oksigeniaaty-codes-sheet border rounded p-3 mb-3">
-        <p class="mb-2"><strong>{{#str}} recovery:title, factor_oksigeniaaty {{/str}}</strong><br><small>{{for}}</small></p>
-        <ol class="factor-oksigeniaaty-codes-list">
+    <p class="fo-codigos-aviso">{{#str}} recovery:pageintro, factor_oksigeniaaty {{/str}}</p>
+    <div class="fo-hoja">
+        <div class="fo-hoja-cab">
+            <span class="fo-hoja-llave" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg></span>
+            <div>
+                <p class="fo-hoja-titulo">{{#str}} recovery:title, factor_oksigeniaaty {{/str}}</p>
+                <p class="fo-hoja-para">{{for}}</p>
+            </div>
+        </div>
+        <ol class="factor-oksigeniaaty-codes-list fo-hoja-codigos">
             {{#codes}}
-            <li><code>{{code}}</code></li>
+            <li><span class="fo-hoja-casilla" aria-hidden="true"></span><code>{{code}}</code></li>
             {{/codes}}
         </ol>
-        <p class="mb-0"><small>{{#str}} recovery:once, factor_oksigeniaaty {{/str}}</small></p>
+        <p class="fo-hoja-pie">{{#str}} recovery:once, factor_oksigeniaaty {{/str}} {{#str}} recovery:mark, factor_oksigeniaaty {{/str}}</p>
     </div>
     <p class="factor-oksigeniaaty-codes-actions">
         <button type="button" class="btn btn-primary" data-oksigeniaaty-print hidden>{{#str}} recovery:print, factor_oksigeniaaty {{/str}}</button>

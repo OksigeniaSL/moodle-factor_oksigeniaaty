@@ -9,6 +9,12 @@
   making them or using one is told to the person (a new notice, `recovery`, by email too).
 - With recovery codes left, the factor can be passed even when nothing can reach the person; resetting the factor for
   someone takes their codes too.
+- «Your accesses» gets its design: the state on top in a line (what approves, and a calm amber note with «Change your
+  password» when a sign-in was stopped), what approves on one side and the sign-ins by day on the other, every date in
+  words («today at 08:14», «on 19 November»). The recovery codes show as a ticket of ten; the printed sheet fits on one
+  page, with a box to tick each code. The sign-in screen's code box shows the shape of a code.
+- A phone's «last approved» is only set by its own signed answer: passing with a recovery code or a chat no longer
+  marks every phone of the person as used.
 
 ## 0.2.8-dev (22 November 2026)
 

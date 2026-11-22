@@ -232,7 +232,8 @@ class chats {
             $list[] = [
                 'id' => (int) $chat['id'],
                 'name' => $who !== '' ? $name . ' · ' . $who : $name,
-                'since' => userdate((int) $chat['since'], get_string('strftimedatefullshort', 'langconfig')),
+                'since' => accesses::words((int) $chat['since'], false),
+                'channel' => clean_param($chat['channel'], PARAM_ALPHA),
             ];
         }
         return $list;

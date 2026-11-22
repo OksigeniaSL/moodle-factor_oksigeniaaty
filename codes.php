@@ -59,7 +59,8 @@ echo $OUTPUT->render_from_template('factor_oksigeniaaty/codes', [
     'for' => get_string('recovery:pagefor', 'factor_oksigeniaaty', (object) [
         'name' => fullname($USER),
         'site' => format_string(get_site()->fullname, true, ['context' => context_system::instance()]),
-        'date' => userdate(time(), get_string('strftimedatefullshort', 'langconfig')),
+        // in words and with its year: a sheet of paper is read long after «today»
+        'date' => userdate(time(), get_string('accesses:dateformatyear', 'factor_oksigeniaaty')),
     ]),
     'backurl' => $accesses->out(false),
 ]);

@@ -38,8 +38,6 @@ class accesses {
     public static function context(int $userid): array {
         global $DB;
         $user = \core_user::get_user($userid, '*', MUST_EXIST);
-        $datetime = get_string('strftimedatetimeshort', 'langconfig');
-        $date = get_string('strftimedatefullshort', 'langconfig');
 
         $phones = [];
         $devices = array_values(devices::active($userid));
@@ -49,13 +47,17 @@ class accesses {
             $phones[] = [
                 'id' => (int) $device->id,
                 'name' => $name,
-                'since' => userdate((int) $device->timecreated, $date),
-                'lastused' => $device->lastverified ? userdate((int) $device->lastverified, $datetime) : '',
+                'since' => self::words((int) $device->timecreated, false),
+                'lastused' => $device->lastverified ? self::words((int) $device->lastverified) : '',
                 'confirm' => get_string('accesses:removephoneconfirm', 'factor_oksigeniaaty', $name),
             ];
         }
 
         $history = [];
+        $days = [];
+        $approved = 0;
+        $stopped = 0;
+        $laststopped = 0;
         $requests = $DB->get_records(
             request::TABLE,
             ['userid' => $userid],
@@ -66,8 +68,11 @@ class accesses {
         );
         foreach ($requests as $record) {
             $outcome = self::outcome($record);
-            $history[] = [
-                'when' => userdate((int) $record->timecreated, $datetime),
+            $time = (int) $record->timecreated;
+            $line = [
+                'when' => self::words($time),
+                // the hour alone, under the heading of its day
+                'time' => userdate($time, get_string('accesses:timeformat', 'factor_oksigeniaaty')),
                 'device' => $record->device,
                 'outcome' => get_string('accesses:' . $outcome, 'factor_oksigeniaaty'),
                 'via' => $record->via !== '' && in_array($outcome, ['approved', 'denied', 'wrong'], true)
@@ -75,16 +80,37 @@ class accesses {
                 'approved' => $outcome === 'approved',
                 'stopped' => $outcome === 'denied' || $outcome === 'wrong',
                 'waiting' => $outcome === 'pending',
+                'expired' => $outcome === 'expired',
             ];
+            $history[] = $line;
+            // Grouped by day, the latest first: «Today», «Yesterday», «21 November».
+            $day = self::day($time);
+            if (!$days || end($days)['label'] !== $day) {
+                $days[] = ['label' => $day, 'entries' => []];
+            }
+            $days[count($days) - 1]['entries'][] = $line;
+            $approved += $line['approved'] ? 1 : 0;
+            if ($line['stopped']) {
+                $stopped++;
+                $laststopped = $laststopped ?: $time;
+            }
         }
 
         $base = '/admin/tool/mfa/factor/oksigeniaaty/';
+        $chats = chats::own($userid);
         $context = [
             'phones' => $phones,
-            'chats' => chats::own($userid),
+            'chats' => $chats,
             'chatsupported' => chats::supported(),
             'history' => $history,
+            'historydays' => $days,
             'days' => (int) (request::KEEP / DAYSECS),
+            // The state at the top, in words: what approves, and whether any sign-in was stopped (calm when none).
+            'approvers' => self::approvers(count($phones), count($chats)),
+            'stoppedcount' => $stopped,
+            'stoppednote' => self::stoppednote($stopped, $laststopped),
+            'allgood' => $approved && !$stopped
+                ? get_string('accesses:allgood', 'factor_oksigeniaaty', (int) (request::KEEP / DAYSECS)) : '',
             'addurl' => (new \moodle_url('/admin/tool/mfa/action.php', ['action' => 'setup', 'factor' => 'oksigeniaaty']))
                 ->out(false),
             'removephoneurl' => (new \moodle_url($base . 'removephone.php'))->out(false),
@@ -111,18 +137,105 @@ class accesses {
         global $DB;
         $made = recovery::made($userid);
         $used = (int) $DB->get_field(recovery::TABLE, 'MAX(timeused)', ['userid' => $userid]);
-        $date = get_string('strftimedatefullshort', 'langconfig');
         $left = (object) [
             'left' => recovery::remaining($userid),
             'total' => recovery::COUNT,
-            'made' => $made ? userdate($made, $date) : '',
+            'made' => $made ? self::words($made, false) : '',
         ];
+        // The codes as a ticket of ten: the spent ones punched.
+        $marks = [];
+        for ($i = 0; $made && $i < $left->total; $i++) {
+            $marks[] = ['used' => $i < $left->total - $left->left];
+        }
         return [
             'made' => $left->made,
             'lefttext' => $made ? get_string('recovery:left', 'factor_oksigeniaaty', $left) : '',
-            'lastused' => $used ? userdate($used, get_string('strftimedatetimeshort', 'langconfig')) : '',
+            'lastused' => $used ? self::words($used) : '',
+            'marks' => $marks,
             'createurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/codes.php'))->out(false),
         ];
+    }
+
+    /**
+     * The note on top when sign-ins were stopped: how many, and when the last one was.
+     *
+     * @param int $stopped How many.
+     * @param int $last When the last one was.
+     * @return string Empty when none was.
+     */
+    private static function stoppednote(int $stopped, int $last): string {
+        if (!$stopped) {
+            return '';
+        }
+        if ($stopped === 1) {
+            return get_string('accesses:stoppedone', 'factor_oksigeniaaty', self::words($last));
+        }
+        $a = (object) ['count' => $stopped, 'when' => self::words($last)];
+        return get_string('accesses:stoppedmany', 'factor_oksigeniaaty', $a);
+    }
+
+    /**
+     * A moment in words, never in numbers: «hoy a las 8:14», «ayer a las 23:02», «21 de
+     * noviembre a las 9:00»; the year only when it is not this one. Without the hour, the day alone.
+     *
+     * @param int $time The moment.
+     * @param bool $hour Whether to say the hour.
+     * @return string
+     */
+    public static function words(int $time, bool $hour = true): string {
+        $day = \core_text::strtolower(self::day($time));
+        // a date takes its article («el 21 de noviembre»); today and yesterday do not
+        $recent = [userdate(time(), '%Y-%m-%d'), userdate(time() - DAYSECS, '%Y-%m-%d')];
+        if (!in_array(userdate($time, '%Y-%m-%d'), $recent, true)) {
+            $day = get_string('accesses:onday', 'factor_oksigeniaaty', self::day($time));
+        }
+        if (!$hour) {
+            return $day;
+        }
+        return get_string('accesses:at', 'factor_oksigeniaaty', (object) [
+            'day' => $day,
+            'time' => userdate($time, get_string('accesses:timeformat', 'factor_oksigeniaaty')),
+        ]);
+    }
+
+    /**
+     * The day of a moment, as a heading: «Hoy», «Ayer», «21 de noviembre» (and the year when it is not this one).
+     *
+     * @param int $time The moment.
+     * @return string
+     */
+    public static function day(int $time): string {
+        $date = userdate($time, '%Y-%m-%d');
+        if ($date === userdate(time(), '%Y-%m-%d')) {
+            return get_string('accesses:today', 'factor_oksigeniaaty');
+        }
+        if ($date === userdate(time() - DAYSECS, '%Y-%m-%d')) {
+            return get_string('accesses:yesterday', 'factor_oksigeniaaty');
+        }
+        $format = userdate($time, '%Y') === userdate(time(), '%Y') ? 'accesses:dateformat' : 'accesses:dateformatyear';
+        return userdate($time, get_string($format, 'factor_oksigeniaaty'));
+    }
+
+    /**
+     * What approves the person's sign-ins, in a line: «Aprueban tus entradas: 1 móvil y 1 chat.»
+     *
+     * @param int $phones How many phones.
+     * @param int $chats How many chats.
+     * @return string Empty when nothing does.
+     */
+    private static function approvers(int $phones, int $chats): string {
+        $p = $phones === 1 ? get_string('accesses:summaryonephone', 'factor_oksigeniaaty')
+            : get_string('accesses:summaryphones', 'factor_oksigeniaaty', $phones);
+        $c = $chats === 1 ? get_string('accesses:summaryonechat', 'factor_oksigeniaaty')
+            : get_string('accesses:summarychats', 'factor_oksigeniaaty', $chats);
+        if (!$phones && !$chats) {
+            return '';
+        }
+        $what = $phones ? $p : $c;
+        if ($phones && $chats) {
+            $what = get_string('accesses:summaryboth', 'factor_oksigeniaaty', (object) ['phones' => $p, 'chats' => $c]);
+        }
+        return get_string('accesses:approvers', 'factor_oksigeniaaty', $what);
     }
 
     /**

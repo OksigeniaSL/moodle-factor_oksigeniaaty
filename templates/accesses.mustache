@@ -13,130 +13,179 @@
 
     You should have received a copy of the GNU General Public License
     along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-{{!
+}}
 {{!
     @template factor_oksigeniaaty/accesses
 
-    «Your accesses»: the phones and chats that approve the person's sign-ins, each with a way to take it away, and the
-    sign-ins that asked for approval lately.
+    «Your accesses». It has to feel «this is under control». At the top, the state in
+    a line or two: what approves the person's sign-ins and, when one was stopped, a calm amber note with «Change your
+    password»; with only approved ones, a quiet line that says so. Then, side by side on a wide screen and one under the
+    other on a phone: what approves (the phones, the chats and the recovery codes, each with a way to take it away or to
+    renew it) and the sign-ins of the last days, grouped by day, the hour first. A stopped one shows at a glance by its
+    edge and its words, never by a red that alarms. Every date in words.
+
+    Context variables required for this template:
+    * approvers, allgood, stoppedcount, stoppednote - The state at the top, in words.
+    * phones - id, name, since, lastused, confirm.
+    * chats, chatsupported - The chats joined: id, name, since, channel (telegram or whatsapp, for its colour).
+    * recovery - The recovery codes: made (when, in words; empty without codes), lefttext, lastused, marks (used: true
+      for each spent one, for the ticket of ten), createurl.
+    * historydays - The sign-ins by day: label, entries (time, device, outcome, via, approved, stopped, waiting, expired).
+    * days, addurl, removephoneurl, unlinkurl, sesskey, passwordurl.
 
     Example context (json):
     {
-        "phones": [{"id": 4, "name": "Pixel 8", "since": "21/11/26", "lastused": "22/11/26, 08:14",
-            "confirm": "Pixel 8 will no longer approve your sign-ins."}],
-        "chats": [{"id": 7, "name": "Telegram · Ana", "since": "21/11/26"}],
+        "approvers": "Aprueban tus entradas: 1 móvil y 1 chat.",
+        "allgood": "",
+        "stoppedcount": 1,
+        "stoppednote": "Una entrada se paró ayer a las 23:02. Si no fuiste tú, cambia la contraseña.",
+        "phones": [{"id": 4, "name": "Pixel 8", "since": "el 21 de noviembre", "lastused": "hoy a las 08:14",
+            "confirm": "Pixel 8 dejará de aprobar tus entradas."}],
+        "chats": [{"id": 7, "name": "Telegram · Ana", "since": "el 21 de noviembre", "channel": "telegram"}],
         "chatsupported": true,
-        "history": [
-            {"when": "22/11/26, 08:13", "device": "Chrome on Windows", "outcome": "Approved", "via": "in the app",
-                "approved": true, "stopped": false, "waiting": false},
-            {"when": "21/11/26, 23:02", "device": "Firefox on Linux", "outcome": "Stopped with «Not me»",
-                "via": "on Telegram", "approved": false, "stopped": true, "waiting": false}
+        "recovery": {"made": "el 22 de noviembre", "lefttext": "Te quedan 7 de 10, creados el 22 de noviembre.",
+            "lastused": "hoy a las 09:40", "createurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/codes.php",
+            "marks": [{"used": true}, {"used": true}, {"used": true}, {"used": false}, {"used": false}, {"used": false},
+                {"used": false}, {"used": false}, {"used": false}, {"used": false}]},
+        "historydays": [
+            {"label": "Hoy", "entries": [{"time": "08:13", "device": "Chrome en Windows", "outcome": "Aprobada",
+                "via": "en la app", "approved": true, "stopped": false, "waiting": false, "expired": false}]},
+            {"label": "Ayer", "entries": [{"time": "23:02", "device": "Firefox en Linux", "outcome": "Parada con «No soy yo»",
+                "via": "por Telegram", "approved": false, "stopped": true, "waiting": false, "expired": false}]}
         ],
         "days": 30,
         "addurl": "https://example.com/admin/tool/mfa/action.php?action=setup&factor=oksigeniaaty",
         "removephoneurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/removephone.php",
         "unlinkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php",
         "sesskey": "x",
-        "passwordurl": "https://example.com/login/change_password.php",
-        "recovery": {"made": "22/11/26", "lefttext": "9 of 10 left, made on 22/11/26.", "lastused": "22/11/26, 09:40",
-            "createurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/codes.php"}
+        "passwordurl": "https://example.com/login/change_password.php"
     }
 }}
 <div class="factor-oksigeniaaty-accesses">
-    <section class="factor-oksigeniaaty-accesses-phones mb-4" aria-labelledby="factor-oksigeniaaty-phones">
-        <h3 id="factor-oksigeniaaty-phones">{{#str}} accesses:phones, factor_oksigeniaaty {{/str}}</h3>
-        {{#phones.0}}
-        <ul class="list-unstyled">
-            {{#phones}}
-            <li class="mb-3">
-                <strong>{{name}}</strong>
-                <br><small>{{#str}} accesses:since, factor_oksigeniaaty, {{since}} {{/str}} ·
-                {{#lastused}}{{#str}} accesses:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}{{/lastused}}
-                {{^lastused}}{{#str}} accesses:neverused, factor_oksigeniaaty {{/str}}{{/lastused}}</small>
-                <form method="post" action="{{removephoneurl}}" class="mt-1">
-                    <input type="hidden" name="sesskey" value="{{sesskey}}">
-                    <input type="hidden" name="id" value="{{id}}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm"
-                        data-modal="confirmation" data-modal-type="delete"
-                        data-modal-title-str='["accesses:removephone", "factor_oksigeniaaty"]'
-                        data-modal-content="{{confirm}}"
-                        data-modal-yes-button-str='["accesses:removephone", "factor_oksigeniaaty"]'>
-                        {{#str}} accesses:removephone, factor_oksigeniaaty {{/str}}
-                    </button>
-                </form>
-            </li>
-            {{/phones}}
-        </ul>
-        {{/phones.0}}
-        {{^phones.0}}
-        <p>{{#str}} accesses:nophones, factor_oksigeniaaty {{/str}}</p>
-        {{/phones.0}}
-        <p><a class="btn btn-secondary" href="{{addurl}}">{{#str}} accesses:addphone, factor_oksigeniaaty {{/str}}</a></p>
-    </section>
-    {{#chats.0}}
-    <section class="factor-oksigeniaaty-accesses-chats mb-4" aria-labelledby="factor-oksigeniaaty-chats">
-        <h3 id="factor-oksigeniaaty-chats">{{#str}} accesses:chats, factor_oksigeniaaty {{/str}}</h3>
-        <ul class="list-unstyled">
-            {{#chats}}
-            <li class="mb-3">
-                <strong>{{name}}</strong>
-                <br><small>{{#str}} accesses:chatsince, factor_oksigeniaaty, {{since}} {{/str}}</small>
-                <form method="post" action="{{unlinkurl}}" class="mt-1">
-                    <input type="hidden" name="sesskey" value="{{sesskey}}">
-                    <input type="hidden" name="id" value="{{id}}">
-                    <input type="hidden" name="back" value="accesses">
-                    <button type="submit" class="btn btn-outline-danger btn-sm">{{#str}} setup:remove, factor_oksigeniaaty {{/str}}</button>
-                </form>
-            </li>
-            {{/chats}}
-        </ul>
-    </section>
-    {{/chats.0}}
-    {{#recovery}}
-    <section class="factor-oksigeniaaty-accesses-recovery mb-4" aria-labelledby="factor-oksigeniaaty-recovery">
-        <h3 id="factor-oksigeniaaty-recovery">{{#str}} recovery:title, factor_oksigeniaaty {{/str}}</h3>
-        <p>{{#str}} recovery:intro, factor_oksigeniaaty {{/str}}</p>
-        {{#made}}
-        <p>{{lefttext}}
-        {{#lastused}}<br><small>{{#str}} recovery:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}</small>{{/lastused}}</p>
-        <form method="post" action="{{createurl}}">
-            <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <button type="submit" class="btn btn-secondary"
-                data-modal="confirmation"
-                data-modal-title-str='["recovery:createnew", "factor_oksigeniaaty"]'
-                data-modal-content-str='["recovery:createnewconfirm", "factor_oksigeniaaty"]'
-                data-modal-yes-button-str='["recovery:createnew", "factor_oksigeniaaty"]'>
-                {{#str}} recovery:createnew, factor_oksigeniaaty {{/str}}
-            </button>
-        </form>
-        {{/made}}
-        {{^made}}
-        <p>{{#str}} recovery:none, factor_oksigeniaaty {{/str}}</p>
-        <form method="post" action="{{createurl}}">
-            <input type="hidden" name="sesskey" value="{{sesskey}}">
-            <button type="submit" class="btn btn-secondary">{{#str}} recovery:create, factor_oksigeniaaty {{/str}}</button>
-        </form>
-        {{/made}}
-    </section>
-    {{/recovery}}
-    <section class="factor-oksigeniaaty-accesses-history" aria-labelledby="factor-oksigeniaaty-history">
-        <h3 id="factor-oksigeniaaty-history">{{#str}} accesses:history, factor_oksigeniaaty {{/str}}</h3>
-        {{#history.0}}
-        <p>{{#str}} accesses:historyintro, factor_oksigeniaaty, {{days}} {{/str}}</p>
-        <ul class="list-unstyled">
-            {{#history}}
-            <li class="mb-2{{#stopped}} text-danger{{/stopped}}">
-                <strong>{{when}}</strong> · {{device}}
-                <br><small>{{outcome}}{{#via}} {{via}}{{/via}}</small>
-            </li>
-            {{/history}}
-        </ul>
-        {{#passwordurl}}
-        <p><a href="{{passwordurl}}">{{#str}} approve:changepassword, factor_oksigeniaaty {{/str}}</a></p>
-        {{/passwordurl}}
-        {{/history.0}}
-        {{^history.0}}
-        <p>{{#str}} accesses:nohistory, factor_oksigeniaaty, {{days}} {{/str}}</p>
-        {{/history.0}}
-    </section>
+    <div class="fo-estado{{#stoppednote}} fo-estado-aviso{{/stoppednote}}" role="status">
+        <span class="fo-estado-icono" aria-hidden="true">{{^stoppednote}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>{{/stoppednote}}{{#stoppednote}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="M12 8v5"/><path d="M12 16.5v.01"/></svg>{{/stoppednote}}</span>
+        <div class="fo-estado-texto">
+            {{#approvers}}<p class="fo-estado-quien">{{approvers}}</p>{{/approvers}}
+            {{^approvers}}<p class="fo-estado-quien">{{#str}} accesses:nophones, factor_oksigeniaaty {{/str}}</p>{{/approvers}}
+            {{#allgood}}<p class="fo-estado-linea">{{allgood}}</p>{{/allgood}}
+            {{#stoppednote}}<p class="fo-estado-linea fo-estado-parada">{{stoppednote}}</p>{{/stoppednote}}
+        </div>
+        {{#stoppednote}}{{#passwordurl}}
+        <a class="btn btn-warning fo-estado-boton" href="{{passwordurl}}">{{#str}} approve:changepassword, factor_oksigeniaaty {{/str}}</a>
+        {{/passwordurl}}{{/stoppednote}}
+    </div>
+
+    <div class="fo-columnas">
+        <div class="fo-columna">
+            <section class="fo-caja" aria-labelledby="factor-oksigeniaaty-phones">
+                <h3 class="fo-caja-titulo" id="factor-oksigeniaaty-phones"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>{{#str}} accesses:phones, factor_oksigeniaaty {{/str}}</h3>
+                {{#phones.0}}
+                <ul class="fo-lista">
+                    {{#phones}}
+                    <li class="fo-fila">
+                        <span class="fo-cosa fo-cosa-movil" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
+                        <div class="fo-fila-texto">
+                            <strong>{{name}}</strong>
+                            <small>{{#str}} accesses:since, factor_oksigeniaaty, {{since}} {{/str}}</small>
+                            <small>{{#lastused}}{{#str}} accesses:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}{{/lastused}}{{^lastused}}{{#str}} accesses:neverused, factor_oksigeniaaty {{/str}}{{/lastused}}</small>
+                        </div>
+                        <form method="post" action="{{removephoneurl}}" class="fo-fila-accion">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <input type="hidden" name="id" value="{{id}}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                data-modal="confirmation" data-modal-type="delete"
+                                data-modal-title-str='["accesses:removephone", "factor_oksigeniaaty"]'
+                                data-modal-content="{{confirm}}"
+                                data-modal-yes-button-str='["accesses:removephone", "factor_oksigeniaaty"]'>
+                                {{#str}} accesses:removephone, factor_oksigeniaaty {{/str}}
+                            </button>
+                        </form>
+                    </li>
+                    {{/phones}}
+                </ul>
+                {{/phones.0}}
+                {{^phones.0}}
+                <p class="fo-vacio">{{#str}} accesses:nophones, factor_oksigeniaaty {{/str}}</p>
+                {{/phones.0}}
+                <a class="btn btn-outline-primary btn-sm fo-anadir" href="{{addurl}}">{{#str}} accesses:addphone, factor_oksigeniaaty {{/str}}</a>
+            </section>
+
+            {{#chats.0}}
+            <section class="fo-caja" aria-labelledby="factor-oksigeniaaty-chats">
+                <h3 class="fo-caja-titulo" id="factor-oksigeniaaty-chats"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M20 9h1a1 1 0 0 1 1 1v7l-3-2h-6"/></svg>{{#str}} accesses:chats, factor_oksigeniaaty {{/str}}</h3>
+                <ul class="fo-lista">
+                    {{#chats}}
+                    <li class="fo-fila">
+                        <span class="fo-cosa fo-canal-{{channel}}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg></span>
+                        <div class="fo-fila-texto">
+                            <strong>{{name}}</strong>
+                            <small>{{#str}} accesses:chatsince, factor_oksigeniaaty, {{since}} {{/str}}</small>
+                        </div>
+                        <form method="post" action="{{unlinkurl}}" class="fo-fila-accion">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <input type="hidden" name="id" value="{{id}}">
+                            <input type="hidden" name="back" value="accesses">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">{{#str}} setup:remove, factor_oksigeniaaty {{/str}}</button>
+                        </form>
+                    </li>
+                    {{/chats}}
+                </ul>
+            </section>
+            {{/chats.0}}
+
+            {{#recovery}}
+            <section class="fo-caja" aria-labelledby="factor-oksigeniaaty-recovery">
+                <h3 class="fo-caja-titulo" id="factor-oksigeniaaty-recovery"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>{{#str}} recovery:title, factor_oksigeniaaty {{/str}}</h3>
+                <div class="fo-fila fo-recuperar">
+                    <div class="fo-fila-texto">
+                        {{#made}}
+                        <strong>{{lefttext}}</strong>
+                        <span class="fo-bono" aria-hidden="true">{{#marks}}<i class="{{#used}}fo-usado{{/used}}"></i>{{/marks}}</span>
+                        {{#lastused}}<small>{{#str}} recovery:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}</small>{{/lastused}}
+                        {{/made}}
+                        {{^made}}<strong>{{#str}} recovery:none, factor_oksigeniaaty {{/str}}</strong>{{/made}}
+                        <small>{{#str}} recovery:intro, factor_oksigeniaaty {{/str}}</small>
+                    </div>
+                    <form method="post" action="{{createurl}}" class="fo-fila-accion">
+                        <input type="hidden" name="sesskey" value="{{sesskey}}">
+                        {{#made}}
+                        <button type="submit" class="btn btn-outline-primary btn-sm"
+                            data-modal="confirmation"
+                            data-modal-title-str='["recovery:createnew", "factor_oksigeniaaty"]'
+                            data-modal-content-str='["recovery:createnewconfirm", "factor_oksigeniaaty"]'
+                            data-modal-yes-button-str='["recovery:createnew", "factor_oksigeniaaty"]'>
+                            {{#str}} recovery:createnew, factor_oksigeniaaty {{/str}}
+                        </button>
+                        {{/made}}
+                        {{^made}}
+                        <button type="submit" class="btn btn-primary btn-sm">{{#str}} recovery:create, factor_oksigeniaaty {{/str}}</button>
+                        {{/made}}
+                    </form>
+                </div>
+            </section>
+            {{/recovery}}
+        </div>
+
+        <section class="fo-caja fo-entradas" aria-labelledby="factor-oksigeniaaty-history">
+            <h3 class="fo-caja-titulo" id="factor-oksigeniaaty-history"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>{{#str}} accesses:history, factor_oksigeniaaty {{/str}}</h3>
+            {{#historydays.0}}
+            <p class="fo-intro">{{#str}} accesses:historyintro, factor_oksigeniaaty, {{days}} {{/str}}</p>
+            {{#historydays}}
+            <h4 class="fo-dia">{{label}}</h4>
+            <ol class="fo-linea">
+                {{#entries}}
+                <li class="fo-entrada{{#stopped}} fo-parada{{/stopped}}{{#waiting}} fo-esperando{{/waiting}}{{#expired}} fo-sin{{/expired}}">
+                    <span class="fo-hora">{{time}}</span>
+                    <span class="fo-marca" aria-hidden="true">{{#approved}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>{{/approved}}{{#stopped}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg>{{/stopped}}{{#waiting}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>{{/waiting}}{{#expired}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 12h10"/></svg>{{/expired}}</span>
+                    <span class="fo-entrada-texto"><strong>{{device}}</strong><small>{{outcome}}{{#via}} {{via}}{{/via}}</small></span>
+                </li>
+                {{/entries}}
+            </ol>
+            {{/historydays}}
+            {{/historydays.0}}
+            {{^historydays.0}}
+            <p class="fo-vacio">{{#str}} accesses:nohistory, factor_oksigeniaaty, {{days}} {{/str}}</p>
+            {{/historydays.0}}
+        </section>
+    </div>
 </div>

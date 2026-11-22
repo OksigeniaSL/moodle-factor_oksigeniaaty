@@ -73,10 +73,10 @@
     {{/reachable}}
     {{#codes}}
     <details class="factor-oksigeniaaty-recovery mt-3"{{#codeerror}} open{{/codeerror}}{{^reachable}} open{{/reachable}}>
-        <summary>{{#str}} recovery:summary, factor_oksigeniaaty {{/str}}</summary>
+        <summary><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>{{#str}} recovery:summary, factor_oksigeniaaty {{/str}}</summary>
         <label for="factor-oksigeniaaty-recoverycode" class="mt-2">{{#str}} recovery:label, factor_oksigeniaaty {{/str}}</label>
-        <input type="text" id="factor-oksigeniaaty-recoverycode" name="oksigeniaatycode" class="form-control{{#codeerror}} is-invalid{{/codeerror}}"
-            inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="20"
+        <input type="text" id="factor-oksigeniaaty-recoverycode" name="oksigeniaatycode" class="form-control factor-oksigeniaaty-recoverycode{{#codeerror}} is-invalid{{/codeerror}}"
+            inputmode="numeric" autocomplete="one-time-code" spellcheck="false" maxlength="20" placeholder="0000 0000"
             {{#codeerror}}aria-describedby="factor-oksigeniaaty-recoveryerror" aria-invalid="true"{{/codeerror}}>
         {{#codeerror}}
         <div id="factor-oksigeniaaty-recoveryerror" class="invalid-feedback d-block" role="alert">{{codeerror}}</div>
