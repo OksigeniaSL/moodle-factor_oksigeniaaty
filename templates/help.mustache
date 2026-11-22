@@ -1,0 +1,55 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+{{!
+{{!
+    @template factor_oksigeniaaty/help
+
+    The page of an adult of the family asked for help: the code to tell, by voice, to the person who asked, and the way
+    to stop it if they did not ask.
+
+    Example context (json):
+    {
+        "none": false, "waiting": true, "used": false, "refused": false, "expired": false,
+        "name": "Ana Gil", "code": "482 913", "left": "8 minutes left.",
+        "url": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/help.php?h=3", "sesskey": "x"
+    }
+}}
+<div class="factor-oksigeniaaty-help">
+    {{#waiting}}
+    <p>{{#str}} familyhelp:intro, factor_oksigeniaaty, {{name}} {{/str}}</p>
+    <p>{{#str}} familyhelp:tell, factor_oksigeniaaty {{/str}}</p>
+    <p class="factor-oksigeniaaty-code factor-oksigeniaaty-helpcode"><span class="visually-hidden sr-only">{{#str}} familyhelp:codehidden, factor_oksigeniaaty {{/str}} </span>{{code}}</p>
+    <p>{{left}}</p>
+    <p><strong>{{#str}} familyhelp:warn, factor_oksigeniaaty, {{name}} {{/str}}</strong></p>
+    <form method="post" action="{{url}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="hidden" name="refuse" value="1">
+        <button type="submit" class="btn btn-outline-danger">{{#str}} familyhelp:refuse, factor_oksigeniaaty {{/str}}</button>
+    </form>
+    {{/waiting}}
+    {{#used}}
+    <p role="status">{{#str}} familyhelp:used, factor_oksigeniaaty, {{name}} {{/str}}</p>
+    {{/used}}
+    {{#refused}}
+    <p role="status">{{#str}} familyhelp:refusedalready, factor_oksigeniaaty {{/str}}</p>
+    {{/refused}}
+    {{#expired}}
+    <p role="status">{{#str}} familyhelp:expired, factor_oksigeniaaty {{/str}}</p>
+    {{/expired}}
+    {{#none}}
+    <p role="status">{{#str}} familyhelp:none, factor_oksigeniaaty {{/str}}</p>
+    {{/none}}
+</div>

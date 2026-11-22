@@ -44,7 +44,7 @@
         "chats": [{"id": 7, "name": "Telegram · Ana", "since": "el 21 de noviembre", "channel": "telegram"}],
         "chatsupported": true,
         "recovery": {"made": "el 22 de noviembre", "lefttext": "Te quedan 7 de 10, creados el 22 de noviembre.",
-            "lastused": "hoy a las 09:40", "createurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/codes.php",
+            "lastused": "hoy a las 09:40", "helperstext": "", "createurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/codes.php",
             "marks": [{"used": true}, {"used": true}, {"used": true}, {"used": false}, {"used": false}, {"used": false},
                 {"used": false}, {"used": false}, {"used": false}, {"used": false}]},
         "historydays": [
@@ -145,6 +145,7 @@
                         {{/made}}
                         {{^made}}<strong>{{#str}} recovery:none, factor_oksigeniaaty {{/str}}</strong>{{/made}}
                         <small>{{#str}} recovery:intro, factor_oksigeniaaty {{/str}}</small>
+                        {{#helperstext}}<small>{{helperstext}}</small>{{/helperstext}}
                     </div>
                     <form method="post" action="{{createurl}}" class="fo-fila-accion">
                         <input type="hidden" name="sesskey" value="{{sesskey}}">

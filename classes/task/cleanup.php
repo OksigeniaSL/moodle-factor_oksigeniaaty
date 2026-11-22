@@ -35,12 +35,14 @@ class cleanup extends \core\task\scheduled_task {
     }
 
     /**
-     * Delete the requests older than 30 days and the codes to register a phone older than a day.
+     * Delete the requests and the help asked of the family older than 30 days, and the codes to register a phone
+     * older than a day.
      */
     public function execute(): void {
         global $DB;
         $before = time() - \factor_oksigeniaaty\local\request::KEEP;
         $DB->delete_records_select(\factor_oksigeniaaty\local\request::TABLE, 'timecreated < ?', [$before]);
+        $DB->delete_records_select(\factor_oksigeniaaty\local\familyhelp::TABLE, 'timecreated < ?', [$before]);
         $before = time() - \factor_oksigeniaaty\local\devices::ENROLKEEP;
         $DB->delete_records_select(\factor_oksigeniaaty\local\devices::ENROLTABLE, 'timecreated < ?', [$before]);
     }

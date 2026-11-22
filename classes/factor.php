@@ -18,6 +18,7 @@ namespace factor_oksigeniaaty;
 
 use factor_oksigeniaaty\local\chats;
 use factor_oksigeniaaty\local\devices;
+use factor_oksigeniaaty\local\familyhelp;
 use factor_oksigeniaaty\local\reach;
 use factor_oksigeniaaty\local\recovery;
 use factor_oksigeniaaty\local\request;
@@ -65,13 +66,15 @@ class factor extends object_factor_base {
     }
 
     /**
-     * Whether the factor can be passed now: a request can reach the person, or they have recovery codes left.
+     * Whether the factor can be passed now: a request can reach the person, they have recovery codes left, or, for
+     * someone with a phone registered, an adult of their family can give them a code.
      *
      * @param int $userid The person.
      * @return bool
      */
     private static function ready(int $userid): bool {
-        return self::reachable($userid) || recovery::remaining($userid) > 0;
+        return self::reachable($userid) || recovery::remaining($userid) > 0
+            || (devices::active($userid) && familyhelp::helpers($userid));
     }
 
     /**
@@ -106,14 +109,24 @@ class factor extends object_factor_base {
             redirect(new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/stopped.php'));
         }
 
-        // A recovery code, typed below the number: spent here, before the form is validated, so that the screen can
-        // say what went wrong; a wrong one counts a failure there, as any other.
+        // Help asked of the family: by a link with the session key, not by the form, which would count a failure.
+        if (optional_param('oksigeniaatyhelp', 0, PARAM_BOOL) && confirm_sesskey()) {
+            familyhelp::ask($userid, $sid);
+        }
+        $help = familyhelp::for_session($userid, $sid);
+        $helpwaiting = $help && $help->status === familyhelp::PENDING;
+
+        // A recovery code (eight digits) or the family's (six), typed below the number: spent here, before the form is
+        // validated, so that the screen can say what went wrong; a wrong one counts a failure there, as any other.
         $codeerror = '';
         if ($mform->isSubmitted() && optional_param('oksigeniaatyusecode', 0, PARAM_BOOL) && confirm_sesskey()) {
             $typed = optional_param('oksigeniaatycode', '', PARAM_RAW_TRIMMED);
-            self::$recovered[$userid] = $typed !== '' && recovery::spend($userid, $typed);
+            $family = strlen((string) preg_replace('/\D+/', '', $typed)) === 6;
+            self::$recovered[$userid] = $typed !== ''
+                && ($family ? familyhelp::spend($userid, $sid, $typed) : recovery::spend($userid, $typed));
             if (!self::$recovered[$userid]) {
-                $codeerror = get_string($typed === '' ? 'recovery:empty' : 'recovery:wrong', 'factor_oksigeniaaty');
+                $wrong = $family ? 'familyhelp:wrong' : 'recovery:wrong';
+                $codeerror = get_string($typed === '' ? 'recovery:empty' : $wrong, 'factor_oksigeniaaty');
             }
         }
         $reachable = self::reachable($userid);
@@ -177,9 +190,10 @@ class factor extends object_factor_base {
             'problem' => $problem,
             'early' => $early ? get_string('error:notapproved', 'factor_oksigeniaaty') : '',
             'reachable' => $reachable,
-            'codes' => $codes > 0 || $codeerror !== '',
+            'codes' => $codes > 0 || $codeerror !== '' || $helpwaiting,
             'codeerror' => $codeerror,
         ];
+        $context += self::family_context($userid, $reachable, $codes, $helpwaiting);
         // Raw, not a static element: the form would put it in a narrow column of a row.
         $mform->addElement('html', $OUTPUT->render_from_template('factor_oksigeniaaty/login', $context));
         // Always: while waiting it asks and goes on by itself; otherwise it hides the form's button, which has nothing
@@ -189,6 +203,38 @@ class factor extends object_factor_base {
         ]);
         $PAGE->requires->js($script);
         return $mform;
+    }
+
+    /**
+     * What the sign-in screen says about the help of the family: the link to ask for it, the wait for the code, and
+     * what to do when nothing else can reach the person.
+     *
+     * @param int $userid The person.
+     * @param bool $reachable Whether a request can reach them.
+     * @param int $codes Their recovery codes left.
+     * @param bool $helpwaiting Whether this browser waits for the family's code.
+     * @return array
+     */
+    private static function family_context(int $userid, bool $reachable, int $codes, bool $helpwaiting): array {
+        $canask = !$helpwaiting && familyhelp::can_ask($userid);
+        $askurl = new \moodle_url('/admin/tool/mfa/auth.php', [
+            'factorname' => 'oksigeniaaty',
+            'oksigeniaatyhelp' => 1,
+            'sesskey' => sesskey(),
+        ]);
+        $only = '';
+        if (!$reachable) {
+            $only = $codes > 0 ? 'recovery:only' : ($canask || $helpwaiting ? 'familyhelp:only' : '');
+        }
+        return [
+            'helpurl' => $canask ? $askurl->out(false) : '',
+            'helpwaiting' => $helpwaiting
+                ? get_string('familyhelp:waiting', 'factor_oksigeniaaty', (int) (familyhelp::LIFE / MINSECS)) : '',
+            'onlytext' => $only !== '' ? get_string($only, 'factor_oksigeniaaty') : '',
+            'codelabel' => get_string($helpwaiting ? 'familyhelp:label' : 'recovery:label', 'factor_oksigeniaaty'),
+            'codeplaceholder' => $helpwaiting ? '000 000' : '0000 0000',
+            'codesummary' => get_string($helpwaiting ? 'familyhelp:summary' : 'recovery:summary', 'factor_oksigeniaaty'),
+        ];
     }
 
     /**
@@ -219,6 +265,7 @@ class factor extends object_factor_base {
      */
     public function post_pass_state(): void {
         global $USER;
+        familyhelp::expire_pending((int) $USER->id);
         $request = request::for_session((int) $USER->id, request::session_hash());
         if ($request && $request->status === request::APPROVED) {
             request::mark_used((int) $request->id);

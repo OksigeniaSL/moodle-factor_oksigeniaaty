@@ -44,7 +44,16 @@ $messageproviders = [
             'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
-    // Recovery codes made, or one used: as a new phone, by email too.
+    // An adult of the family is asked for the code that lets someone of their household in without a phone: fast, on
+    // the phone and on the site, and by email too.
+    'familyhelp' => [
+        'defaults' => [
+            'airnotifier' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
+    // Recovery codes made or used, and help of the family asked for, used or stopped: as a new phone, by email too.
     'recovery' => [
         'defaults' => [
             'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,

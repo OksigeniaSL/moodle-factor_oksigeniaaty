@@ -151,9 +151,27 @@ class accesses {
             'made' => $left->made,
             'lefttext' => $made ? get_string('recovery:left', 'factor_oksigeniaaty', $left) : '',
             'lastused' => $used ? self::words($used) : '',
+            'helperstext' => self::helpers($userid),
             'marks' => $marks,
             'createurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/codes.php'))->out(false),
         ];
+    }
+
+    /**
+     * Who of the family can help the person in without phone or codes, by name.
+     *
+     * @param int $userid The person.
+     * @return string Empty when nobody can.
+     */
+    private static function helpers(int $userid): string {
+        $names = [];
+        foreach (familyhelp::helpers($userid) as $helperid) {
+            $helper = \core_user::get_user($helperid);
+            if ($helper) {
+                $names[] = fullname($helper);
+            }
+        }
+        return $names ? get_string('accesses:helpers', 'factor_oksigeniaaty', implode(', ', $names)) : '';
     }
 
     /**

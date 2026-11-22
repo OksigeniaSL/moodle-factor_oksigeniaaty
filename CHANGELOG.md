@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.10-dev (22 November 2026)
+
+- Help of the family, for someone without their phone and without their recovery codes (with Oksigenia Family): «No
+  phone or codes? Ask an adult of your family for help» on the sign-in screen tells every other adult of their household
+  with an account. The notice leads to a page, behind that adult's own sign-in, with a code of six digits to tell them in
+  person or on the phone, as Apple's recovery contacts do: the code never goes to whoever asks. It works once, for ten
+  minutes, and only in the browser that asked. «They did not ask me» stops it, ends that browser's session and blocks
+  asking again for a day; no more than three a day. The person is told when help is asked for, used or stopped.
+  «Your accesses» names who can help. A setting turns it off; without Oksigenia Family it does not show.
+
 ## 0.2.9-dev (22 November 2026)
 
 - Recovery codes, for the day the phone is lost or out of battery: ten codes of eight digits, made from «Your accesses»

@@ -62,5 +62,24 @@
         <INDEX NAME="codehash" UNIQUE="false" FIELDS="codehash"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="factor_oksigeniaaty_help" COMMENT="Each time someone without phone or codes asks an adult of their family for a code">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Who is signing in"/>
+        <FIELD NAME="sid" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="SHA-256 of the browser session that asked: the code only works there"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="6" NOTNULL="false" SEQUENCE="false" COMMENT="The code the adult tells, while it waits; wiped once it ends"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="pending" SEQUENCE="false" COMMENT="pending, used, refused or expired"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeexpires" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timeanswered" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="sid" UNIQUE="false" FIELDS="sid"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

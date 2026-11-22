@@ -44,6 +44,9 @@ class provider implements
     /** @var string The recovery codes. */
     private const CODES = 'factor_oksigeniaaty_codes';
 
+    /** @var string The help asked of the family. */
+    private const HELP = 'factor_oksigeniaaty_help';
+
     /**
      * What is stored.
      *
@@ -66,6 +69,12 @@ class provider implements
             $codes[$field] = 'privacy:metadata:' . self::CODES . ':' . $field;
         }
         $collection->add_database_table(self::CODES, $codes, 'privacy:metadata:' . self::CODES);
+        $help = [];
+        foreach (['userid', 'status', 'timecreated'] as $field) {
+            $help[$field] = 'privacy:metadata:' . self::HELP . ':' . $field;
+        }
+        $collection->add_database_table(self::HELP, $help, 'privacy:metadata:' . self::HELP);
+        $collection->add_subsystem_link('core_message', [], 'messageprovider:familyhelp');
         // The registered phones are rows of tool_mfa, which declares and handles them.
         $collection->add_subsystem_link('core_message', [], 'messageprovider:newphone');
         $collection->add_subsystem_link('core_message', [], 'messageprovider:approval');
@@ -81,7 +90,7 @@ class provider implements
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
         $contextlist = new contextlist();
-        foreach ([self::TABLE, self::ENROL, self::CODES] as $table) {
+        foreach ([self::TABLE, self::ENROL, self::CODES, self::HELP] as $table) {
             $sql = 'SELECT ctx.id
                       FROM {context} ctx
                       JOIN {' . $table . '} r ON r.userid = ctx.instanceid AND ctx.contextlevel = :level
@@ -101,7 +110,7 @@ class provider implements
         if ($context->contextlevel != CONTEXT_USER) {
             return;
         }
-        foreach ([self::TABLE, self::ENROL, self::CODES] as $table) {
+        foreach ([self::TABLE, self::ENROL, self::CODES, self::HELP] as $table) {
             $userlist->add_from_sql(
                 'userid',
                 'SELECT userid FROM {' . $table . '} WHERE userid = :userid',
@@ -141,10 +150,17 @@ class provider implements
                     'timeused' => $code->timeused ? transform::datetime($code->timeused) : '',
                 ];
             }
-            if ($requests || $codes) {
+            $help = [];
+            foreach ($DB->get_records(self::HELP, ['userid' => $userid], 'id') as $one) {
+                $help[] = (object) [
+                    'status' => $one->status,
+                    'timecreated' => transform::datetime($one->timecreated),
+                ];
+            }
+            if ($requests || $codes || $help) {
                 writer::with_context($context)->export_data(
                     [get_string('pluginname', 'factor_oksigeniaaty')],
-                    (object) ['requests' => $requests, 'recoverycodes' => $codes]
+                    (object) ['requests' => $requests, 'recoverycodes' => $codes, 'familyhelp' => $help]
                 );
             }
         }
@@ -161,6 +177,7 @@ class provider implements
             $DB->delete_records(self::TABLE, ['userid' => $context->instanceid]);
             $DB->delete_records(self::ENROL, ['userid' => $context->instanceid]);
             $DB->delete_records(self::CODES, ['userid' => $context->instanceid]);
+            $DB->delete_records(self::HELP, ['userid' => $context->instanceid]);
         }
     }
 
@@ -177,6 +194,7 @@ class provider implements
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
                 $DB->delete_records(self::ENROL, ['userid' => $userid]);
                 $DB->delete_records(self::CODES, ['userid' => $userid]);
+                $DB->delete_records(self::HELP, ['userid' => $userid]);
             }
         }
     }
@@ -197,6 +215,7 @@ class provider implements
                 $DB->delete_records(self::TABLE, ['userid' => $userid]);
                 $DB->delete_records(self::ENROL, ['userid' => $userid]);
                 $DB->delete_records(self::CODES, ['userid' => $userid]);
+                $DB->delete_records(self::HELP, ['userid' => $userid]);
             }
         }
     }

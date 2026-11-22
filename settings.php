@@ -51,6 +51,13 @@ if ($ADMIN->fulltree) {
         PARAM_INT
     ));
 
+    $settings->add(new admin_setting_configcheckbox(
+        'factor_oksigeniaaty/familyhelp',
+        new lang_string('settings:familyhelp', 'factor_oksigeniaaty'),
+        new lang_string('settings:familyhelp_help', 'factor_oksigeniaaty'),
+        1
+    ));
+
     $settings->add(new admin_setting_configduration(
         'factor_oksigeniaaty/validity',
         new lang_string('settings:validity', 'factor_oksigeniaaty'),
