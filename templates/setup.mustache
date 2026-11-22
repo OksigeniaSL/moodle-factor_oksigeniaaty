@@ -29,7 +29,8 @@
         "chats": [{"channel": "telegram", "name": "Telegram", "url": "https://t.me/example_bot?start=x"}],
         "ownchats": [{"id": 7, "name": "Telegram · Ana", "since": "21/11/26"}],
         "unlinkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php",
-        "sesskey": "x"
+        "sesskey": "x",
+        "accessesurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/accesses.php"
     }
 }}
 <div class="factor-oksigeniaaty-setup"{{#checkurl}} data-oksigeniaaty-enrolcheck="{{checkurl}}"{{/checkurl}}>
@@ -73,4 +74,5 @@
         {{/ownchats}}
     </ul>
     {{/ownchats.0}}
+    <p><a href="{{accessesurl}}">{{#str}} accesses:title, factor_oksigeniaaty {{/str}}</a></p>
 </div>

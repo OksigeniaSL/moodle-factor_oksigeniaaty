@@ -206,6 +206,41 @@ class factor extends object_factor_base {
     }
 
     /**
+     * What approves the person's sign-ins, on the card of the preferences, with the way to «Your accesses».
+     *
+     * @param int $factorid One of the person's phones.
+     * @return string
+     */
+    public function get_manage_info(int $factorid): string {
+        global $USER;
+        $phones = count(devices::active((int) $USER->id));
+        $chats = count(chats::own((int) $USER->id));
+        $parts = [];
+        if ($phones) {
+            $parts[] = $phones === 1 ? get_string('accesses:summaryonephone', 'factor_oksigeniaaty')
+                : get_string('accesses:summaryphones', 'factor_oksigeniaaty', $phones);
+        }
+        if ($chats) {
+            $parts[] = $chats === 1 ? get_string('accesses:summaryonechat', 'factor_oksigeniaaty')
+                : get_string('accesses:summarychats', 'factor_oksigeniaaty', $chats);
+        }
+        if (count($parts) === 2) {
+            $both = (object) ['phones' => $parts[0], 'chats' => $parts[1]];
+            $both = get_string('accesses:summaryboth', 'factor_oksigeniaaty', $both);
+            $text = get_string('manageinfo', 'factor_oksigeniaaty', $both);
+        } else if ($parts) {
+            $text = get_string('manageinfo', 'factor_oksigeniaaty', $parts[0]);
+        } else {
+            $text = get_string('accesses:nophones', 'factor_oksigeniaaty');
+        }
+        $link = \html_writer::link(
+            new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/accesses.php'),
+            get_string('accesses:title', 'factor_oksigeniaaty')
+        );
+        return \html_writer::tag('p', s($text)) . \html_writer::tag('p', $link);
+    }
+
+    /**
      * A phone is registered before it approves.
      *
      * @return bool
@@ -266,6 +301,7 @@ class factor extends object_factor_base {
             'ownchats' => chats::own((int) $USER->id),
             'unlinkurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php'))->out(false),
             'sesskey' => sesskey(),
+            'accessesurl' => (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/accesses.php'))->out(false),
         ];
         $code = self::$enrolcodes[$enrolid] ?? '';
         if ($code !== '') {

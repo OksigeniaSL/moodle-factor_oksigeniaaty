@@ -1,0 +1,113 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+{{!
+{{!
+    @template factor_oksigeniaaty/accesses
+
+    «Your accesses»: the phones and chats that approve the person's sign-ins, each with a way to take it away, and the
+    sign-ins that asked for approval lately.
+
+    Example context (json):
+    {
+        "phones": [{"id": 4, "name": "Pixel 8", "since": "21/11/26", "lastused": "22/11/26, 08:14",
+            "confirm": "Pixel 8 will no longer approve your sign-ins."}],
+        "chats": [{"id": 7, "name": "Telegram · Ana", "since": "21/11/26"}],
+        "chatsupported": true,
+        "history": [
+            {"when": "22/11/26, 08:13", "device": "Chrome on Windows", "outcome": "Approved", "via": "in the app",
+                "approved": true, "stopped": false, "waiting": false},
+            {"when": "21/11/26, 23:02", "device": "Firefox on Linux", "outcome": "Stopped with «Not me»",
+                "via": "on Telegram", "approved": false, "stopped": true, "waiting": false}
+        ],
+        "days": 30,
+        "addurl": "https://example.com/admin/tool/mfa/action.php?action=setup&factor=oksigeniaaty",
+        "removephoneurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/removephone.php",
+        "unlinkurl": "https://example.com/admin/tool/mfa/factor/oksigeniaaty/unlinkchat.php",
+        "sesskey": "x",
+        "passwordurl": "https://example.com/login/change_password.php"
+    }
+}}
+<div class="factor-oksigeniaaty-accesses">
+    <section class="factor-oksigeniaaty-accesses-phones mb-4" aria-labelledby="factor-oksigeniaaty-phones">
+        <h3 id="factor-oksigeniaaty-phones">{{#str}} accesses:phones, factor_oksigeniaaty {{/str}}</h3>
+        {{#phones.0}}
+        <ul class="list-unstyled">
+            {{#phones}}
+            <li class="mb-3">
+                <strong>{{name}}</strong>
+                <br><small>{{#str}} accesses:since, factor_oksigeniaaty, {{since}} {{/str}} ·
+                {{#lastused}}{{#str}} accesses:lastused, factor_oksigeniaaty, {{lastused}} {{/str}}{{/lastused}}
+                {{^lastused}}{{#str}} accesses:neverused, factor_oksigeniaaty {{/str}}{{/lastused}}</small>
+                <form method="post" action="{{removephoneurl}}" class="mt-1">
+                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                    <input type="hidden" name="id" value="{{id}}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                        data-modal="confirmation" data-modal-type="delete"
+                        data-modal-title-str='["accesses:removephone", "factor_oksigeniaaty"]'
+                        data-modal-content="{{confirm}}"
+                        data-modal-yes-button-str='["accesses:removephone", "factor_oksigeniaaty"]'>
+                        {{#str}} accesses:removephone, factor_oksigeniaaty {{/str}}
+                    </button>
+                </form>
+            </li>
+            {{/phones}}
+        </ul>
+        {{/phones.0}}
+        {{^phones.0}}
+        <p>{{#str}} accesses:nophones, factor_oksigeniaaty {{/str}}</p>
+        {{/phones.0}}
+        <p><a class="btn btn-secondary" href="{{addurl}}">{{#str}} accesses:addphone, factor_oksigeniaaty {{/str}}</a></p>
+    </section>
+    {{#chats.0}}
+    <section class="factor-oksigeniaaty-accesses-chats mb-4" aria-labelledby="factor-oksigeniaaty-chats">
+        <h3 id="factor-oksigeniaaty-chats">{{#str}} accesses:chats, factor_oksigeniaaty {{/str}}</h3>
+        <ul class="list-unstyled">
+            {{#chats}}
+            <li class="mb-3">
+                <strong>{{name}}</strong>
+                <br><small>{{#str}} accesses:chatsince, factor_oksigeniaaty, {{since}} {{/str}}</small>
+                <form method="post" action="{{unlinkurl}}" class="mt-1">
+                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                    <input type="hidden" name="id" value="{{id}}">
+                    <input type="hidden" name="back" value="accesses">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">{{#str}} setup:remove, factor_oksigeniaaty {{/str}}</button>
+                </form>
+            </li>
+            {{/chats}}
+        </ul>
+    </section>
+    {{/chats.0}}
+    <section class="factor-oksigeniaaty-accesses-history" aria-labelledby="factor-oksigeniaaty-history">
+        <h3 id="factor-oksigeniaaty-history">{{#str}} accesses:history, factor_oksigeniaaty {{/str}}</h3>
+        {{#history.0}}
+        <p>{{#str}} accesses:historyintro, factor_oksigeniaaty, {{days}} {{/str}}</p>
+        <ul class="list-unstyled">
+            {{#history}}
+            <li class="mb-2{{#stopped}} text-danger{{/stopped}}">
+                <strong>{{when}}</strong> · {{device}}
+                <br><small>{{outcome}}{{#via}} {{via}}{{/via}}</small>
+            </li>
+            {{/history}}
+        </ul>
+        {{#passwordurl}}
+        <p><a href="{{passwordurl}}">{{#str}} approve:changepassword, factor_oksigeniaaty {{/str}}</a></p>
+        {{/passwordurl}}
+        {{/history.0}}
+        {{^history.0}}
+        <p>{{#str}} accesses:nohistory, factor_oksigeniaaty, {{days}} {{/str}}</p>
+        {{/history.0}}
+    </section>
+</div>

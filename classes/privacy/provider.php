@@ -25,7 +25,7 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
 /**
- * The requests to approve a sign-in, in the user's context. They are kept for a day.
+ * The requests to approve a sign-in, in the user's context. They are kept for 30 days, for «Your accesses».
  *
  * @package    factor_oksigeniaaty
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>

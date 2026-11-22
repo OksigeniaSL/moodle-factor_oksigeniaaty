@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Takes away a chat that can approve the person's sign-ins, from the setup page's list: by POST, with the session key,
- * and only a chat of the person signed in, with the multi-factor authentication passed.
+ * Takes away a chat that can approve the person's sign-ins, from the setup page or «Your accesses»: by POST, with the
+ * session key, and only a chat of the person signed in, with the multi-factor authentication passed.
  *
  * @package    factor_oksigeniaaty
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
@@ -36,8 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $done = chats::unlink((int) $USER->id, required_param('id', PARAM_INT));
+$back = optional_param('back', '', PARAM_ALPHA) === 'accesses'
+    ? new moodle_url('/admin/tool/mfa/factor/oksigeniaaty/accesses.php')
+    : new moodle_url('/admin/tool/mfa/action.php', ['action' => 'setup', 'factor' => 'oksigeniaaty']);
 redirect(
-    new moodle_url('/admin/tool/mfa/action.php', ['action' => 'setup', 'factor' => 'oksigeniaaty']),
+    $back,
     $done ? get_string('unlinked', 'factor_oksigeniaaty') : '',
     null,
     \core\output\notification::NOTIFY_SUCCESS

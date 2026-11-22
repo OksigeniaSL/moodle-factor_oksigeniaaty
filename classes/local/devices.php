@@ -41,6 +41,9 @@ class devices {
     /** @var int How long a code to register a phone lasts. */
     public const ENROLLIFE = 10 * MINSECS;
 
+    /** @var int How long a code to register a phone is kept, used or not. */
+    public const ENROLKEEP = DAYSECS;
+
     /** @var string Waiting for the app. */
     public const PENDING = 'pending';
     /** @var string The app registered the phone. */
@@ -59,7 +62,7 @@ class devices {
         global $DB;
         $now = time();
         $DB->set_field(self::ENROLTABLE, 'status', self::EXPIRED, ['userid' => $userid, 'status' => self::PENDING]);
-        $DB->delete_records_select(self::ENROLTABLE, 'timecreated < ?', [$now - DAYSECS]);
+        $DB->delete_records_select(self::ENROLTABLE, 'timecreated < ?', [$now - self::ENROLKEEP]);
         $code = bin2hex(random_bytes(16));
         $id = $DB->insert_record(self::ENROLTABLE, (object) [
             'userid' => $userid,
@@ -213,7 +216,7 @@ class devices {
             $message->fullmessageformat = FORMAT_PLAIN;
             $message->fullmessagehtml = '';
             $message->smallmessage = $message->subject;
-            $message->contexturl = (new \moodle_url('/admin/tool/mfa/user_preferences.php'))->out(false);
+            $message->contexturl = (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/accesses.php'))->out(false);
             $message->contexturlname = get_string('newphone:link', 'factor_oksigeniaaty');
             // The app draws its own icon only beside notices of activities; anyone else's, it takes from the notice.
             $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];

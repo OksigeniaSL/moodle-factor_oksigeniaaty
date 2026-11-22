@@ -61,8 +61,8 @@ class request {
     public const MAXHOUR = 6;
     /** @var int The window of MAXRECENT. */
     public const RECENT = 15 * MINSECS;
-    /** @var int How long a request is kept, answered or not. */
-    public const KEEP = DAYSECS;
+    /** @var int How long a request is kept, answered or not: the person sees them in «Your accesses». */
+    public const KEEP = 30 * DAYSECS;
 
     /**
      * Seconds to answer, from the settings: between half a minute and a quarter of an hour.

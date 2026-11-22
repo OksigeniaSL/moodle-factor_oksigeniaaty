@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.8-dev (22 November 2026)
+
+- «Your accesses» (`accesses.php`): the phones and chats that approve the person's sign-ins, each with a button to
+  remove it (a phone, with a confirmation and tool_mfa's own revoke and event), and the sign-ins that asked for approval
+  in the last 30 days, with the browser, what happened and where it was answered. Each one is someone who typed the
+  password, so the list ends with «Change my password». The requests are now kept 30 days instead of one; the codes to
+  register a phone, still one day.
+- It is reached from the card of the multi-factor preferences (which now says what approves, «1 phone and 2 chats»),
+  from the setup page and from the notice of a new phone.
+- The strings tool_mfa asks every factor for and this one lacked (`managefactor`, `manageinfo`, `action:manage`,
+  `setupfactor`, `revokefactorconfirmation`): the preferences showed `[[manageinfo]]` once a phone was registered.
+
 ## 0.2.7-dev (22 November 2026)
 
 - The site's administrators type the number on the phone instead of choosing it among three, which is guessed one
