@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.11-dev (23 November 2026)
+
+- The check of GitHub gives write permission to the plugin's git files after the checkout: git now writes the reverse
+  indexes of its packs read-only, and «grunt» of moodle-plugin-ci could not put back its copy of the plugin over them.
+
 ## 0.2.10-dev (22 November 2026)
 
 - Help of the family, for someone without their phone and without their recovery codes (with Oksigenia Family): «No
