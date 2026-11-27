@@ -347,6 +347,12 @@ class familyhelp {
             $message->contexturl = $url->out(false);
             $message->contexturlname = get_string($urlname, 'factor_oksigeniaaty');
             $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];
+            $pieces = commonmail::security($message, $user, $a->site);
+            if ($provider === 'familyhelp') {
+                // An adult asked to help, not the owner of the account.
+                $pieces['reason'] = get_string('familyhelp:helperreason', 'factor_oksigeniaaty', $a);
+            }
+            commonmail::notice($message, $pieces);
             message_send($message);
         } finally {
             force_current_language($language);

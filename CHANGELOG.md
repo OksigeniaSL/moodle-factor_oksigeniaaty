@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.12-dev (27 November 2026)
+
+- The notices of a new phone, of the recovery codes and of the help of the family go by mail in the common look of the
+  organization, by the way of Oksigenia Marandu 0.70 or later when it is there: its name, colour and logo inside the
+  mail, a greeting, a button to «Your accesses» (or to the code, for the adult asked to help), why it arrives and a text
+  version. What the bell and the app show does not change, and without Marandu they go as before.
+
 ## 0.2.11-dev (23 November 2026)
 
 - The check of GitHub gives write permission to the plugin's git files after the checkout: git now writes the reverse

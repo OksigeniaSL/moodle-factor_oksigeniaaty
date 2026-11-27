@@ -220,6 +220,7 @@ class devices {
             $message->contexturlname = get_string('newphone:link', 'factor_oksigeniaaty');
             // The app draws its own icon only beside notices of activities; anyone else's, it takes from the notice.
             $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];
+            commonmail::notice($message, commonmail::security($message, $user, $a->site));
             message_send($message);
         } finally {
             force_current_language($language);

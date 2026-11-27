@@ -195,6 +195,7 @@ class recovery {
             $message->contexturl = (new \moodle_url('/admin/tool/mfa/factor/oksigeniaaty/accesses.php'))->out(false);
             $message->contexturlname = get_string('accesses:title', 'factor_oksigeniaaty');
             $message->customdata = ['notificationiconurl' => $OUTPUT->image_url('icon', 'factor_oksigeniaaty')->out(false)];
+            commonmail::notice($message, commonmail::security($message, $user, $a->site));
             message_send($message);
         } finally {
             force_current_language($language);
